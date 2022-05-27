@@ -36,10 +36,26 @@ runs:
       uses: actions/setup-node@v3
       with:
         node-version: "16"
-        cache: yarn
+
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      shell: bash
+      run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+    - name: Cache yarn dependencies
+      id: yarn-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
     - name: Get Datadog CLI
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
       shell: bash
       run: yarn global add @datadog/datadog-ci
+
     - name: Upload the JUnit files
       if: ${{ inputs.logs }} == "true"
       shell: bash
@@ -54,6 +70,7 @@ runs:
         DATADOG_API_KEY: ${{ inputs.api-key }}
         DATADOG_SITE: ${{ inputs.datadog-site }}
         DD_ENV: ${{ inputs.dd-env }}
+
     - name: Upload the JUnit files
       if: ${{ inputs.logs }}) != "true"
       shell: bash
