@@ -1,0 +1,20 @@
+name: 'Test Action'
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'release/*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: .
+        with:
+          api-key: ${{secrets.DD_API_KEY}}
+          site: datad0g.com
+          logs: "true"
+          file: ./ci/fixtures/
+          service: junit-upload-github-action

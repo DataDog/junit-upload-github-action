@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Go / gotestsum junitfile-->
+<testsuites>
+	<testsuite tests="22" failures="0" time="0.030000" name="github.com/DataDog/junit-upload-github-action/junitxml">
+		<properties>
+			<property name="go.version" value="go1.15.2 darwin/amd64"></property>
+		</properties>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/c-bazel.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/go-junit-report.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/java-gradle.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/java-maven-surefire.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/js-cypress.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/js-jest.xml" time="0.010000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/php-phpunit.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/python-pytest.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/python-unittest-xml-report.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/python-unittest.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/scala-svt.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests/swift-xctest.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTests" time="0.020000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTestsInvalid/empty.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTestsInvalid/missing-testcase.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTestsInvalid/missing-testsuite.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTestsInvalid/unclosed.xml" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestParseTestsInvalid" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestCreateAPITraceMinimalData" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestCreateAPITraceTestPassing" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestCreateAPITraceTestFailing" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/junitxml" name="TestCreateAPITraceTestSkipped" time="0.000000"></testcase>
+	</testsuite>
+	<testsuite tests="3" failures="0" time="0.000000" name="github.com/DataDog/junit-upload-github-action/processor">
+		<properties>
+			<property name="go.version" value="go1.15.2 darwin/amd64"></property>
+		</properties>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/processor" name="TestAckSplitTracker" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/processor" name="TestProcessor_OneWorker" time="0.000000"></testcase>
+		<testcase classname="github.com/DataDog/junit-upload-github-action/processor" name="TestProcessor_MultipleWorker" time="0.000000"></testcase>
+	</testsuite>
+</testsuites>
