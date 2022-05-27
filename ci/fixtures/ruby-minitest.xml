@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ruby / minitest-reporters -->
+<testsuites>
+  <testsuite name="Minitest::helloTest" filepath="test/minitest/hello_test.rb" skipped="0" failures="1" errors="1" tests="2" assertions="1" time="2.8999987989664078e-05">
+    <testcase name="test_that_it_has_a_version_number" lineno="4" classname="Minitest::helloTest" assertions="0" time="1.4999881386756897e-05">
+    <error type="NameError" message="NameError: uninitialized constant Minitest::hello...">
+Failure:
+test_that_it_has_a_version_number(Minitest::Result) [/Home/github.com/DataDog/minitest/minitest-hello/test/minitest/hello_test.rb:5]:
+NameError: uninitialized constant Minitest::hello
+    /Users/John/go/src/github.com/DataDog/minitest/minitest-hello/test/minitest/hello_test.rb:5:in `test_that_it_has_a_version_number'
+    </error>
+    </testcase>
+    <testcase name="test_it_does_something_useful" lineno="8" classname="Minitest::helloTest" assertions="1" time="1.400010660290718e-05">
+    <failure type="Minitest::Assertion" message="Expected false to be truthy.">
+Failure:
+test_it_does_something_useful(Minitest::Result) [/Home/github.com/DataDog/minitest/minitest-hello/test/minitest/hello_test.rb:9]:
+Expected false to be truthy.
+    </failure>
+    </testcase>
+  </testsuite>
+</testsuites>
