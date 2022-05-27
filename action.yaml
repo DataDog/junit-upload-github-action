@@ -36,10 +36,10 @@ runs:
       uses: actions/setup-node@v3
       with:
         node-version: "16"
-        cache: npm
+        cache: yarn
     - name: Get Datadog CLI
       shell: bash
-      run: npm install -g @datadog/datadog-ci
+      run: yarn global add @datadog/datadog-ci
     - name: Upload the JUnit files
       if: ${{ inputs.logs }} == "true"
       shell: bash
