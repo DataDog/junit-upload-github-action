@@ -18,3 +18,4 @@ jobs:
           logs: "true"
           file: ./ci/fixtures/
           service: junit-upload-github-action
+          env: ci
