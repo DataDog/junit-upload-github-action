@@ -3,6 +3,9 @@
 This action downloads the [datadog-ci](https://github.com/DataDog/datadog-ci) and uses it to upload JUnitXML files
 to the [CI Visibility product](https://docs.datadoghq.com/continuous_integration/).
 
+This action sets up node and requires node `>=10.24.1`. You can configure a specific version of node to use.
+Note that if you have setup another version already it will override it.
+
 ## Usage
 
 ```yaml
@@ -31,6 +34,7 @@ The action has the following options:
 | `datadog-site` | The Datadog site to upload the files to. | True | `datadoghq.com` |
 | `files` | Path to file or folder containing XML files to upload | True | `.` |
 | `concurrency` | Controls the maximum number of concurrent file uploads | True | `20` |
+| `node-version` | The node version to use to install the datadog-ci. It must be `>=10.24.1` | True | `16` |
 | `tags` | Optional extra tags to add to the tests | False | |
 | `env` | Optional environment to add to the tests | False | |
 | `logs` | When set to "true" enables forwarding content from the XML reports as Logs. The content inside `<system-out>`, `<system-err>`, and `<failure>` is collected as logs. Logs from elements inside a `<testcase>` are automatically connected to the test. | False | |
