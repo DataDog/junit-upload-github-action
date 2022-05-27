@@ -52,7 +52,7 @@ runs:
       env:
         DATADOG_API_KEY: ${{ inputs.api-key }}
         DATADOG_SITE: ${{ inputs.datadog-site }}
-        DD_ENV: ${{ inputes.dd-env }}
+        DD_ENV: ${{ inputs.dd-env }}
     - name: Upload the JUnit files
       if: ${{ inputs.logs }}) != "true"
       shell: bash
@@ -65,4 +65,4 @@ runs:
       env:
         DATADOG_API_KEY: ${{ inputs.api-key }}
         DATADOG_SITE: ${{ inputs.datadog-site }}
-        DD_ENV: ${{ inputes.dd-env }}
+        DD_ENV: ${{ inputs.dd-env }}
