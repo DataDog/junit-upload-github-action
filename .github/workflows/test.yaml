@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: .
+      - uses: ./
         with:
           api-key: ${{secrets.DD_API_KEY}}
           site: datad0g.com
