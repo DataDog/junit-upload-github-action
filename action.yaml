@@ -44,7 +44,7 @@ runs:
       shell: bash
       run: npm install -g @datadog/datadog-ci
     - name: Upload the JUnit files
-      if: ${{ inputs.logs }} == "true"
+      if: inputs.logs == 'true'
       shell: bash
       run: |
         datadog-ci junit upload \
@@ -58,7 +58,7 @@ runs:
         DATADOG_SITE: ${{ inputs.datadog-site }}
         DD_ENV: ${{ inputs.env }}
     - name: Upload the JUnit files
-      if: ${{ inputs.logs }}) != "true"
+      if: inputs.logs != 'true'
       shell: bash
       run: |
         datadog-ci junit upload \
