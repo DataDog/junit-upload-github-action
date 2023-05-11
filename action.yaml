@@ -33,6 +33,10 @@ inputs:
   logs:
     required: false
     description: Set to "true" to enable forwarding content from XML reports as logs.
+  skip-git-metadata-upload:
+    required: false
+    description: Set to "true" to skip sending your git metadata with your XML report.
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -51,6 +55,7 @@ runs:
           --service ${{ inputs.service }} \
           --logs \
           --max-concurrency ${{ inputs.concurrency }} \
+          ----skip-git-metadata-upload ${{ inputs.skip-git-metadata-upload == 'true' }} \
           ${{ inputs.files }}
       env:
         DATADOG_API_KEY: ${{ inputs.api-key }}
@@ -64,6 +69,7 @@ runs:
         datadog-ci junit upload \
           --service ${{ inputs.service }} \
           --max-concurrency ${{ inputs.concurrency }} \
+          --skip-git-metadata-upload ${{ inputs.skip-git-metadata-upload == 'true' }} \
           ${{ inputs.files }}
       env:
         DATADOG_API_KEY: ${{ inputs.api-key }}
