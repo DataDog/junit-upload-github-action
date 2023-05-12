@@ -38,4 +38,4 @@ The action has the following options:
 | `tags` | Optional extra tags to add to the tests | False | |
 | `env` | Optional environment to add to the tests | False | |
 | `logs` | When set to "true" enables forwarding content from the XML reports as Logs. The content inside `<system-out>`, `<system-err>`, and `<failure>` is collected as logs. Logs from elements inside a `<testcase>` are automatically connected to the test. | False | |
-| `skip-git-metadata-upload` | When set to "true" it will skip sending your git metadata with your XML report. | False | 'false'|
+| `extra-args` | Extra args to be passed to the datadog-ci junit upload command.| False | |
