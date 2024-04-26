@@ -27,15 +27,15 @@ jobs:
 
 The action has the following options:
 
-| Name | Description | Required | Default         |
-| ---- | ----------- | -------- |-----------------|
-| `api-key` | Datadog API key to use to upload the junit files. | True |                 |
-| `service` | Service name to use with the uploaded test results. | True |                 |
+| Name | Description | Required | Default |
+| ---- | ----------- | -------- | ------- |
+| `api-key` | Datadog API key to use to upload the junit files. | True | |
+| `service` | Service name to use with the uploaded test results. | True | |
 | `datadog-site` | The Datadog site to upload the files to. | True | `datadoghq.com` |
-| `files` | Path to file or folder containing XML files to upload | True | `.`             |
-| `concurrency` | Controls the maximum number of concurrent file uploads | True | `20`            |
-| `node-version` | The node version to use to install the datadog-ci. It must be `>=10.24.1` | True | `20`            |
-| `tags` | Optional extra tags to add to the tests | False |                 |
-| `env` | Optional environment to add to the tests | False |                 |
-| `logs` | When set to "true" enables forwarding content from the XML reports as Logs. The content inside `<system-out>`, `<system-err>`, and `<failure>` is collected as logs. Logs from elements inside a `<testcase>` are automatically connected to the test. | False |                 |
-| `extra-args` | Extra args to be passed to the datadog-ci junit upload command.| False |                 |
+| `files` | Path to file or folder containing XML files to upload | True | `.` |
+| `concurrency` | Controls the maximum number of concurrent file uploads | True | `20` |
+| `node-version` | The node version to use to install the datadog-ci. It must be `>=10.24.1` | True | `20` |
+| `tags` | Optional extra tags to add to the tests | False | |
+| `env` | Optional environment to add to the tests | False | |
+| `logs` | When set to "true" enables forwarding content from the XML reports as Logs. The content inside `<system-out>`, `<system-err>`, and `<failure>` is collected as logs. Logs from elements inside a `<testcase>` are automatically connected to the test. | False | |
+| `extra-args` | Extra args to be passed to the datadog-ci junit upload command.| False | |
