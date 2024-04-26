@@ -23,7 +23,7 @@ inputs:
   node-version:
     required: true
     description: The node version used to install datadog-ci
-    default: "16"
+    default: "20"
   tags:
     required: false
     description: Datadog tags to associate with the uploaded test results.
@@ -41,7 +41,7 @@ runs:
   using: "composite"
   steps:
     - name: Install node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
     - name: Get Datadog CLI
