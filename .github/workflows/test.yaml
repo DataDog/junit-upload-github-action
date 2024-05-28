@@ -9,7 +9,7 @@ on:
     - cron: '0 0 * * *' # Runs at midnight UTC every day
 
 jobs:
-  test-glob-pattern:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
