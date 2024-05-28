@@ -10,6 +10,9 @@ on:
 
 jobs:
   test:
+    strategy:
+      matrix:
+        version: [14, 16, 18, 20]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +25,7 @@ jobs:
           service: junit-upload-github-action-tests
           env: ci
           tags: "foo:bar,alpha:bravo"
+          node-version: ${{ matrix.version}}
       - name: Check that test data can be queried
         run: |
           npm install @datadog/datadog-api-client

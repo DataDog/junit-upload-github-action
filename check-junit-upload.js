@@ -11,7 +11,7 @@ const params = {
   filterQuery: `@test.service:${process.env.DD_SERVICE} @git.commit.sha:${process.env.GITHUB_SHA}`,
   filterFrom: new Date(new Date().getTime() + -300 * 1000), // Last 5 minutes
   filterTo: new Date(),
-  pageLimit: 5,
+  pageLimit: 50,
 };
 
 const CHECK_INTERVAL_SECONDS = 10
