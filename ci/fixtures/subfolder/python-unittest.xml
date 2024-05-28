@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Python / unittest-xml-report -->
-<testsuites>
-<testsuite errors="0" failures="1" file="api/tests_unittest.py" name="api.tests_unittest.TestStringMethods" skipped="1" tests="5" time="0.007">
+<testsuite errors="0" failures="1" file="api/tests_unittest.py" name="api.tests_unittest.TestStringMethods-20200211105522" skipped="1" tests="5" time="0.007">
 	<testcase classname="api.tests_unittest.TestStringMethods" file="api/tests_unittest.py" line="8" name="test_isupper" time="0.000">
+		<system-out>
+<![CDATA[]]>		</system-out>
+		<system-err>
+<![CDATA[]]>		</system-err>
 	</testcase>
 	<testcase classname="api.tests_unittest.TestStringMethods" file="api/tests_unittest.py" line="12" name="test_split" time="0.000">
+		<system-out>
+<![CDATA[]]>		</system-out>
+		<system-err>
+<![CDATA[]]>		</system-err>
 	</testcase>
 	<testcase classname="api.tests_unittest.TestStringMethods" file="api/tests_unittest.py" line="5" name="test_upper" time="0.000">
+		<system-out>
+<![CDATA[]]>
+		Some output
+		</system-out>
+		<system-err>
+<![CDATA[]]>		</system-err>
 	</testcase>
 	<testcase classname="api.tests_unittest.TestStringMethods" file="api/tests_unittest.py" line="23" name="test_failure_unittest" time="0.005">
 		<failure message="True != False" type="AssertionError">
@@ -15,9 +28,16 @@
     self.assertEqual(True, False)
 AssertionError: True != False
 ]]>		</failure>
+		<system-out>
+<![CDATA[]]>		</system-out>
+		<system-err>
+<![CDATA[]]>		</system-err>
 	</testcase>
 	<testcase classname="api.tests_unittest.TestStringMethods" file="api/tests_unittest.py" line="19" name="test_skipped_unittest" time="0.000">
 		<skipped message="demonstrating skipping" type="skip"/>
+		<system-out>
+<![CDATA[]]>		</system-out>
+		<system-err>
+<![CDATA[]]>		</system-err>
 	</testcase>
 </testsuite>
-</testsuites>
