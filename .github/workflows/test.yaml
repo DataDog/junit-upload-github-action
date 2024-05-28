@@ -42,8 +42,7 @@ jobs:
       - name: Grab second latest version of @datadog/datadog-ci
         run: |
           SECOND_LATEST_VERSION=$(curl -s "https://api.github.com/repos/datadog/datadog-ci/releases" | jq '[.[] | {tag_name: .tag_name, published_at: .published_at}] | sort_by(.published_at) | reverse | .[:2] | .[1] | .tag_name')
-          CLEAN_TAG_NAME=${SECOND_LATEST_VERSION#v}
-          echo "CLEAN_TAG_NAME=$CLEAN_TAG_NAME" >> $GITHUB_ENV
+          echo "SECOND_LATEST_VERSION=$SECOND_LATEST_VERSION" >> $GITHUB_ENV
       - name: Upload reports using a glob pattern
         uses: ./
         with:
@@ -53,5 +52,5 @@ jobs:
           service: junit-upload-github-action-tests
           env: ci
           tags: "foo:bar,alpha:bravo"
-          datadog-ci-version: ${{ env.CLEAN_TAG_NAME }}
+          datadog-ci-version: ${{ env.SECOND_LATEST_VERSION }}
       
