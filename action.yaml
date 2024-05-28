@@ -33,6 +33,10 @@ inputs:
   logs:
     required: false
     description: Set to "true" to enable forwarding content from XML reports as logs.
+  datadog-ci-version:
+    required: false
+    description: The version of the @datadog/datadog-ci package to use. It defaults to the latest release (`latest`).
+    default: "latest"
   extra-args:
     default: ""
     description: Extra args to be passed to the datadog-ci cli.
@@ -48,7 +52,7 @@ runs:
       if: ${{ inputs.logs == 'true' }}
       shell: bash
       run: |
-        npx @datadog/datadog-ci junit upload \
+        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
           --service ${{ inputs.service }} \
           --logs \
           --max-concurrency ${{ inputs.concurrency }} \
@@ -63,7 +67,7 @@ runs:
       if: ${{ inputs.logs != 'true' }}
       shell: bash
       run: |
-        npx @datadog/datadog-ci junit upload \
+        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
           --service ${{ inputs.service }} \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.extra-args }} \
