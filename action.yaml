@@ -48,7 +48,7 @@ runs:
       if: ${{ inputs.logs == 'true' }}
       shell: bash
       run: |
-        npm exec @datadog/datadog-ci junit upload \
+        npx @datadog/datadog-ci junit upload \
           --service ${{ inputs.service }} \
           --logs \
           --max-concurrency ${{ inputs.concurrency }} \
@@ -63,7 +63,7 @@ runs:
       if: ${{ inputs.logs != 'true' }}
       shell: bash
       run: |
-        npm exec @datadog/datadog-ci junit upload \
+        npx @datadog/datadog-ci junit upload \
           --service ${{ inputs.service }} \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.extra-args }} \
