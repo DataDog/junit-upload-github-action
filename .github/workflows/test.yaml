@@ -24,14 +24,14 @@ jobs:
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
           env: ci
-          tags: "foo:bar,alpha:bravo"
+          tags: "foo:bar,alpha:bravo,test.node.version:${{ matrix.version}}"
           node-version: ${{ matrix.version}}
       - name: Check that test data can be queried
         run: |
           npm install @datadog/datadog-api-client
           node ./check-junit-upload.js
         env:
-          EXTRA_TAGS: "@foo:bar @alpha:bravo"
+          EXTRA_TAGS: "@foo:bar @alpha:bravo @test.node.version:${{ matrix.version}}"
           DD_API_KEY: ${{ secrets.DD_API_KEY_CI_VISIBILITY }}
           DD_APP_KEY: ${{ secrets.DD_APP_KEY_CI_VISIBILITY }}
           DD_SERVICE: junit-upload-github-action-tests
