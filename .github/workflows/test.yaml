@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - 'release/*'
+      - juan-fernandez/testing-new-version
+  schedule:
+    - cron: '0 0 * * *' # Runs at midnight UTC every day
 
 jobs:
   test:
@@ -14,15 +17,17 @@ jobs:
       - uses: ./
         with:
           api-key: ${{secrets.DD_API_KEY}}
-          datadog-site: datad0g.com
           logs: "true"
-          files: ./ci/fixtures/
-          service: junit-upload-github-action
+          files: '**/fixtures/**'
+          service: junit-upload-github-action-tests
           env: ci
           tags: "foo:bar,alpha:bravo"
-      - name: Tag pipeline with ci version
+      - name: Check that test data can be queried
         run: |
-          datadog-ci tag --level pipeline --tags "datadogci.version:`npm list -g @datadog/datadog-ci | grep @datadog/datadog-ci | awk -F' ' '{print $2}' | awk -F'@' '{print $3}' | tr -d '\n'`"
+          npm install @datadog/datadog-api-client
+          node ./check-junit-upload.js
         env:
-          DATADOG_API_KEY: ${{secrets.DD_API_KEY}}
-          DATADOG_SITE: datad0g.com
+          EXTRA_TAGS: "foo:bar alpha:bravo"
+          DD_API_KEY: ${{ secrets.DD_API_KEY_CI_VISIBILITY }}
+          DD_APP_KEY: ${{ secrets.DD_APP_KEY_CI_VISIBILITY }}
+          DD_SERVICE: junit-upload-github-action-tests
