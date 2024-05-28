@@ -35,3 +35,23 @@ jobs:
           DD_API_KEY: ${{ secrets.DD_API_KEY_CI_VISIBILITY }}
           DD_APP_KEY: ${{ secrets.DD_APP_KEY_CI_VISIBILITY }}
           DD_SERVICE: junit-upload-github-action-tests
+  test-older-datadog-ci-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grab second latest version of @datadog/datadog-ci
+        run: |
+          SECOND_LATEST_VERSION=$(curl -s "https://api.github.com/repos/datadog/datadog-ci/releases" | jq '[.[] | {tag_name: .tag_name, published_at: .published_at}] | sort_by(.published_at) | reverse | .[:2] | .[1] | .tag_name')
+          CLEAN_TAG_NAME=${SECOND_LATEST_VERSION#v}
+          echo "CLEAN_TAG_NAME=$CLEAN_TAG_NAME" >> $GITHUB_ENV
+      - name: Upload reports using a glob pattern
+        uses: ./
+        with:
+          api-key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
+          logs: "true"
+          files: '**/fixtures/**'
+          service: junit-upload-github-action-tests
+          env: ci
+          tags: "foo:bar,alpha:bravo"
+          datadog-ci-version: ${{ env.CLEAN_TAG_NAME }}
+      
