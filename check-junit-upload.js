@@ -36,7 +36,7 @@ async function checkJunitUpload (testLevel) {
   let isSuccess = false
   let data = []
   while (numAttempts++ < MAX_NUM_ATTEMPTS && !isSuccess) {
-    data = await getTestData(`test_level:${testLevel} ${EXTRA_TAGS}`)
+    data = await getTestData(`test_level:${testLevel} ${process.env.EXTRA_TAGS}`)
     if (data.length > 0) {
       isSuccess = true
     } else {
