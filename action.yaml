@@ -1,6 +1,6 @@
 # Composite action to upload junit test result files to Datadog CI Visibility
-name: 'Datadog JUnitXML Upload'
-description: 'Upload JUnitXML reports files to Datadog CI Visibility'
+name: "Datadog JUnitXML Upload"
+description: "Upload JUnitXML reports files to Datadog CI Visibility"
 inputs:
   api-key:
     required: true
@@ -23,7 +23,7 @@ inputs:
   node-version:
     required: true
     description: The node version used to install datadog-ci
-    default: "16"
+    default: "20"
   tags:
     required: false
     description: Datadog tags to associate with the uploaded test results.
@@ -34,24 +34,21 @@ inputs:
     required: false
     description: Set to "true" to enable forwarding content from XML reports as logs.
   extra-args:
-    default: ''
+    default: ""
     description: Extra args to be passed to the datadog-ci cli.
     required: false
 runs:
   using: "composite"
   steps:
     - name: Install node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
-    - name: Get Datadog CLI
-      shell: bash
-      run: npm install -g @datadog/datadog-ci
     - name: Upload the JUnit files
       if: ${{ inputs.logs == 'true' }}
       shell: bash
       run: |
-        datadog-ci junit upload \
+        npm exec @datadog/datadog-ci junit upload \
           --service ${{ inputs.service }} \
           --logs \
           --max-concurrency ${{ inputs.concurrency }} \
@@ -66,7 +63,7 @@ runs:
       if: ${{ inputs.logs != 'true' }}
       shell: bash
       run: |
-        datadog-ci junit upload \
+        npm exec @datadog/datadog-ci junit upload \
           --service ${{ inputs.service }} \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.extra-args }} \

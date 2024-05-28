@@ -10,11 +10,12 @@ on:
     - cron: '0 0 * * *' # Runs at midnight UTC every day
 
 jobs:
-  test:
+  test-glob-pattern:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./
+      - uses: actions/checkout@v4
+      - name: Upload reports using a glob pattern
+        uses: ./
         with:
           api-key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
           logs: "true"
@@ -27,7 +28,7 @@ jobs:
           npm install @datadog/datadog-api-client
           node ./check-junit-upload.js
         env:
-          EXTRA_TAGS: "foo:bar alpha:bravo"
+          EXTRA_TAGS: "@foo:bar @alpha:bravo"
           DD_API_KEY: ${{ secrets.DD_API_KEY_CI_VISIBILITY }}
           DD_APP_KEY: ${{ secrets.DD_APP_KEY_CI_VISIBILITY }}
           DD_SERVICE: junit-upload-github-action-tests

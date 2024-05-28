@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Python / unittest-xml-report -->
+<testsuites>
 <testsuite errors="0" failures="1" file="api/tests_unittest.py" name="api.tests_unittest.TestStringMethods-20200211105522" skipped="1" tests="5" time="0.007" timestamp="2020-02-11T10:55:22">
 	<testcase classname="api.tests_unittest.TestStringMethods" file="api/tests_unittest.py" line="8" name="test_isupper" time="0.000" timestamp="2020-02-11T10:55:22">
 		<system-out>
@@ -41,3 +42,4 @@ AssertionError: True != False
 <![CDATA[]]>		</system-err>
 	</testcase>
 </testsuite>
+</testsuites>
