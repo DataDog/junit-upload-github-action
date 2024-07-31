@@ -73,7 +73,6 @@ jobs:
         uses: ./
         id: test_step
         with:
-          api-key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
           logs: "true"
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
