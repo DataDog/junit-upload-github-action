@@ -5,6 +5,7 @@ inputs:
   api-key:
     required: false
     description: (Deprecated) Datadog API key to use to upload the junit files.
+    deprecationMessage: "This input is deprecated. Use `api_key` instead."
   api_key:
     required: false
     description: Datadog API key to use to upload the junit files.
@@ -15,6 +16,7 @@ inputs:
     required: false
     default: datadoghq.com
     description: (Deprecated) The Datadog site to upload the files to.
+    deprecationMessage: "This input is deprecated. Use `site` instead."
   site:
     required: false
     default: datadoghq.com
