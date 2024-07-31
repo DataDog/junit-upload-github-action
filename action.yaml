@@ -3,13 +3,20 @@ name: "Datadog JUnitXML Upload"
 description: "Upload JUnitXML reports files to Datadog CI Visibility"
 inputs:
   api-key:
-    required: true
+    required: false
+    description: (Deprecated) Datadog API key to use to upload the junit files.
+  api_key:
+    required: false
     description: Datadog API key to use to upload the junit files.
   service:
     required: true
     description: Service name to use with the uploaded test results.
   datadog-site:
-    required: true
+    required: false
+    default: datadoghq.com
+    description: (Deprecated) The Datadog site to upload the files to.
+  site:
+    required: false
     default: datadoghq.com
     description: The Datadog site to upload the files to.
   files:
@@ -48,6 +55,15 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
+    - name: Check if input values are correct
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.api_key }}" ] && [ -z "${{ inputs.api-key }}" ]; then
+          echo "Error: Both api_key and api-key are undefined. At least one must be defined."
+          exit 1
+        else
+          echo "Inputs are valid."
+        fi
     - name: Upload the JUnit files
       if: ${{ inputs.logs == 'true' }}
       shell: bash
@@ -59,8 +75,8 @@ runs:
           ${{ inputs.extra-args }} \
           ${{ inputs.files }}
       env:
-        DATADOG_API_KEY: ${{ inputs.api-key }}
-        DATADOG_SITE: ${{ inputs.datadog-site }}
+        DATADOG_API_KEY: ${{ inputs.api_key != '' && inputs.api_key || inputs.api-key }}
+        DATADOG_SITE: ${{ inputs.site != '' && inputs.site || inputs.datadog-site }}
         DD_ENV: ${{ inputs.env }}
         DD_TAGS: ${{ inputs.tags }}
     - name: Upload the JUnit files
@@ -73,7 +89,7 @@ runs:
           ${{ inputs.extra-args }} \
           ${{ inputs.files }}
       env:
-        DATADOG_API_KEY: ${{ inputs.api-key }}
-        DATADOG_SITE: ${{ inputs.datadog-site }}
+        DATADOG_API_KEY: ${{ inputs.api_key != '' && inputs.api_key || inputs.api-key }}
+        DATADOG_SITE: ${{ inputs.site != '' && inputs.site || inputs.datadog-site }}
         DD_ENV: ${{ inputs.env }}
         DD_TAGS: ${{ inputs.tags }}

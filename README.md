@@ -18,7 +18,7 @@ jobs:
       - run: make tests
       - uses: datadog/junit-upload-github-action@v1
         with:
-            api-key: ${{ secrets.DD_API_KEY }}
+            api_key: ${{ secrets.DD_API_KEY }}
             service: my-app
             files: ./reports/
 ```
@@ -29,9 +29,9 @@ The action has the following options:
 
 | Name | Description | Required | Default |
 | ---- | ----------- | -------- | ------- |
-| `api-key` | Datadog API key to use to upload the junit files. | True | |
+| `api_key` | Datadog API key to use to upload the junit files. | True | |
 | `service` | Service name to use with the uploaded test results. | True | |
-| `datadog-site` | The Datadog site to upload the files to. | True | `datadoghq.com` |
+| `site` | The Datadog site to upload the files to. | True | `datadoghq.com` |
 | `files` | Path to file or folder containing XML files to upload | True | `.` |
 | `concurrency` | Controls the maximum number of concurrent file uploads | True | `20` |
 | `node-version` | The node version to use to install the datadog-ci. It must be `>=14` | True | `20` |
