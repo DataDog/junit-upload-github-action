@@ -63,8 +63,6 @@ runs:
         if [ -z "${{ inputs.api_key }}" ] && [ -z "${{ inputs.api-key }}" ]; then
           echo "Error: Both api_key and api-key are undefined. At least one must be defined."
           exit 1
-        else
-          echo "Inputs are valid."
         fi
     - name: Upload the JUnit files
       if: ${{ inputs.logs == 'true' }}
