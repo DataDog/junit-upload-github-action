@@ -35,7 +35,7 @@ The action has the following options:
 | `files` | Path to file or folder containing XML files to upload | True | `.` |
 | `concurrency` | Controls the maximum number of concurrent file uploads | True | `20` |
 | `node-version` | The node version to use to install the datadog-ci. It must be `>=14` | True | `20` |
-| `tags` | Optional extra tags to add to the tests | False | |
+| `tags` | Optional extra tags to add to the tests formmatted as a comma separated list of tags. | False | |
 | `env` | Optional environment to add to the tests | False | |
 | `logs` | When set to "true" enables forwarding content from the XML reports as Logs. The content inside `<system-out>`, `<system-err>`, and `<failure>` is collected as logs. Logs from elements inside a `<testcase>` are automatically connected to the test. | False | |
 | `datadog-ci-version` | Optionally pin the @datadog/datadog-ci version. | False | `latest` |
