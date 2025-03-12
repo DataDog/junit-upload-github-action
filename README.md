@@ -1,10 +1,10 @@
-# Datadog JUnitXML Upload Actions
+# Datadog JUnitXML Upload Action
 
 This action downloads the [datadog-ci](https://github.com/DataDog/datadog-ci) and uses it to upload JUnitXML files
 to the [Test Optimization product](https://docs.datadoghq.com/tests/).
 
 This action sets up node and requires node `>=14`. You can configure a specific version of node to use.
-Note that if you have setup another version already it will override it.
+Note that if you have set up another version already it will override it.
 
 ## Usage
 
