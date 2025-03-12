@@ -1,6 +1,6 @@
-# Composite action to upload junit test result files to Datadog CI Visibility
+# Composite action to upload junit test result files to Datadog Test Optimization
 name: "Datadog JUnitXML Upload"
-description: "Upload JUnitXML reports files to Datadog CI Visibility"
+description: "Upload JUnitXML reports files to Datadog Test Optimization"
 inputs:
   api_key:
     required: true
