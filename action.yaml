@@ -68,7 +68,7 @@ runs:
           ${{ inputs.extra-args }} \
           ${{ inputs.files }}
       env:
-        DATADOG_API_KEY: ${{ inputs.api_key }}
-        DATADOG_SITE: ${{ inputs.site }}
+        DD_API_KEY: ${{ inputs.api_key }}
+        DD_SITE: ${{ inputs.site }}
         DD_ENV: ${{ inputs.env }}
         DD_TAGS: ${{ inputs.tags }}
