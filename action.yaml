@@ -1,22 +1,10 @@
-# Composite action to upload junit test result files to Datadog CI Visibility
+# Composite action to upload junit test result files to Datadog Test Optimization
 name: "Datadog JUnitXML Upload"
-description: "Upload JUnitXML reports files to Datadog CI Visibility"
+description: "Upload JUnitXML reports files to Datadog Test Optimization"
 inputs:
-  api-key:
-    required: false
-    description: (Deprecated) Datadog API key to use to upload the junit files.
-    deprecationMessage: "This input is deprecated. Use `api_key` instead."
   api_key:
-    required: false
-    description: Datadog API key to use to upload the junit files.
-  service:
     required: true
-    description: Service name to use with the uploaded test results.
-  datadog-site:
-    required: false
-    default: datadoghq.com
-    description: (Deprecated) The Datadog site to upload the files to.
-    deprecationMessage: "This input is deprecated. Use `site` instead."
+    description: Datadog API key to use to upload the junit files.
   site:
     required: false
     default: datadoghq.com
@@ -25,6 +13,13 @@ inputs:
     required: true
     description: JUnit files to upload.
     default: .
+  auto-discovery:
+    required: true
+    description: Do a recursive search and automatic junit files discovery in the folders provided in `files` input (current folder if omitted).
+    default: 'true'
+  ignored-paths:
+    required: false
+    description: A comma-separated list of paths that are ignored when junit files auto-discovery is done. Glob patterns are supported
   concurrency:
     required: true
     description: Controls the maximum number of concurrent file uploads.
@@ -36,6 +31,9 @@ inputs:
   tags:
     required: false
     description: Datadog tags to associate with the uploaded test results.
+  service:
+    required: false
+    description: Service name to use with the uploaded test results.
   env:
     required: false
     description: Datadog env to use for the tests.
@@ -57,39 +55,20 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
-    - name: Check if input values are correct
-      shell: bash
-      run: |
-        if [ -z "${{ inputs.api_key }}" ] && [ -z "${{ inputs.api-key }}" ]; then
-          echo "Error: Both api_key and api-key are undefined. At least one must be defined."
-          exit 1
-        fi
+
     - name: Upload the JUnit files
-      if: ${{ inputs.logs == 'true' }}
       shell: bash
       run: |
         npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
-          --service ${{ inputs.service }} \
-          --logs \
           --max-concurrency ${{ inputs.concurrency }} \
+          ${{ inputs.logs == 'true' && '--logs' || '' }} \
+          ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
+          ${{ inputs.ignored-paths != '' && format('--ignored-paths {0}', inputs.ignored-paths) || '' }} \
+          ${{ inputs.service != '' && format('--service {0}', inputs.service) || '' }} \
           ${{ inputs.extra-args }} \
           ${{ inputs.files }}
       env:
-        DATADOG_API_KEY: ${{ inputs.api_key != '' && inputs.api_key || inputs.api-key }}
-        DATADOG_SITE: ${{ inputs.site != '' && inputs.site || inputs.datadog-site }}
-        DD_ENV: ${{ inputs.env }}
-        DD_TAGS: ${{ inputs.tags }}
-    - name: Upload the JUnit files
-      if: ${{ inputs.logs != 'true' }}
-      shell: bash
-      run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
-          --service ${{ inputs.service }} \
-          --max-concurrency ${{ inputs.concurrency }} \
-          ${{ inputs.extra-args }} \
-          ${{ inputs.files }}
-      env:
-        DATADOG_API_KEY: ${{ inputs.api_key != '' && inputs.api_key || inputs.api-key }}
-        DATADOG_SITE: ${{ inputs.site != '' && inputs.site || inputs.datadog-site }}
+        DD_API_KEY: ${{ inputs.api_key }}
+        DD_SITE: ${{ inputs.site }}
         DD_ENV: ${{ inputs.env }}
         DD_TAGS: ${{ inputs.tags }}
