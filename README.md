@@ -6,6 +6,8 @@ to the [Test Optimization product](https://docs.datadoghq.com/tests/).
 This action sets up node and requires node `>=14`. You can configure a specific version of node to use.
 Note that if you have set up another version already it will override it.
 
+Trigger CI
+
 ## Usage
 
 ```yaml
