@@ -15,7 +15,7 @@ jobs:
         version: [14, 16, 18, 20]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Upload reports using a glob pattern
         uses: ./
         with:
@@ -38,7 +38,7 @@ jobs:
   test-older-datadog-ci-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Grab second latest version of @datadog/datadog-ci
         run: |
           SECOND_LATEST_VERSION=$(curl -s "https://api.github.com/repos/datadog/datadog-ci/releases" | jq '[.[] | {tag_name: .tag_name, published_at: .published_at}] | sort_by(.published_at) | reverse | .[:2] | .[1] | .tag_name')
@@ -67,7 +67,7 @@ jobs:
   test-should-complain-about-missing-api-key:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Upload reports using a glob pattern
         uses: ./
         id: test_step
