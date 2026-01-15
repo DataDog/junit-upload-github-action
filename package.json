@@ -1,0 +1,7 @@
+{
+  "name": "junit-upload-github-action",
+  "private": true,
+  "dependencies": {
+    "@datadog/datadog-ci": "5.2.1"
+  }
+}
