@@ -42,8 +42,7 @@ inputs:
     description: Set to "true" to enable forwarding content from XML reports as logs.
   datadog-ci-version:
     required: false
-    description: The version of the @datadog/datadog-ci package to use. It defaults to the latest release (`latest`).
-    default: "latest"
+    description: The version of the @datadog/datadog-ci package to use. Leave empty to use the bundled version from package.json (recommended for caching).
   extra-args:
     default: ""
     description: Extra args to be passed to the datadog-ci cli.
@@ -51,15 +50,34 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Resolve action path
+      id: action-path
+      shell: bash
+      run: echo "path=$(cd "${{ github.action_path }}" && pwd)" >> "$GITHUB_OUTPUT"
+
     - name: Install node
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
+        cache: npm
+        cache-dependency-path: ${{ steps.action-path.outputs.path }}/package-lock.json
+
+    - name: Install datadog-ci (bundled version)
+      if: inputs.datadog-ci-version == ''
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci
 
     - name: Upload the JUnit files
       shell: bash
       run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
+        if [ -n "${{ inputs.datadog-ci-version }}" ]; then
+          DATADOG_CI="npx @datadog/datadog-ci@${{ inputs.datadog-ci-version }}"
+        else
+          DATADOG_CI="${{ github.action_path }}/node_modules/.bin/datadog-ci"
+        fi
+
+        $DATADOG_CI junit upload \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.logs == 'true' && '--logs' || '' }} \
           ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
