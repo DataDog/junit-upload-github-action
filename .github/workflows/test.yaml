@@ -46,8 +46,7 @@ jobs:
       - name: Upload reports using a glob pattern
         uses: ./
         with:
-          # should still work with api-key as input
-          api-key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
+          api_key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
           logs: "true"
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
