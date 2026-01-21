@@ -56,10 +56,15 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
+    - name: Install Datadog CI
+      shell: bash
+      run: |
+        yarn add @datadog/datadog-ci@${{ inputs.datadog-ci-version}}
+
     - name: Upload the JUnit files
       shell: bash
       run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
+        ./node_modules/.bin/datadog-ci junit upload \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.logs == 'true' && '--logs' || '' }} \
           ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
