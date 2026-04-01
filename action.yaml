@@ -24,10 +24,6 @@ inputs:
     required: true
     description: Controls the maximum number of concurrent file uploads.
     default: "20"
-  node-version:
-    required: true
-    description: The node version used to install datadog-ci
-    default: "20"
   tags:
     required: false
     description: Datadog tags to associate with the uploaded test results.
@@ -42,8 +38,18 @@ inputs:
     description: Set to "true" to enable forwarding content from XML reports as logs.
   datadog-ci-version:
     required: false
-    description: The version of the @datadog/datadog-ci package to use. It defaults to the latest release (`latest`).
-    default: "latest"
+    description: >
+      The version of the datadog-ci standalone binary to download from GitHub Releases.
+      Defaults to 5.9.1 (pinned for supply-chain safety). Do not use "latest" — pin
+      to a specific version so checksum verification is deterministic.
+    default: "5.9.1"
+  platform:
+    required: false
+    description: >
+      Target platform binary to download from GitHub Releases. Available options:
+      linux-x64, linux-arm64, darwin-x64, darwin-arm64, win-x64.
+      Defaults to linux-x64 which covers most GitHub-hosted and self-hosted runners.
+    default: "linux-x64"
   extra-args:
     default: ""
     description: Extra args to be passed to the datadog-ci cli.
@@ -51,15 +57,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install node
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ inputs.node-version }}
+    - name: Download and verify datadog-ci binary
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl -fsSL -o datadog-ci \
+          "https://github.com/DataDog/datadog-ci/releases/download/v${{ inputs.datadog-ci-version }}/datadog-ci_${{ inputs.platform }}"
+        curl -fsSL -o checksums.txt \
+          "https://github.com/DataDog/datadog-ci/releases/download/v${{ inputs.datadog-ci-version }}/checksums.txt"
+        grep "datadog-ci_${{ inputs.platform }}" checksums.txt \
+          | sed "s|datadog-ci_${{ inputs.platform }}|datadog-ci|" \
+          | sha256sum --check
+        chmod +x datadog-ci
 
     - name: Upload the JUnit files
       shell: bash
       run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
+        ./datadog-ci junit upload \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.logs == 'true' && '--logs' || '' }} \
           ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
