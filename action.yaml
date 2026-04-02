@@ -51,15 +51,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install node
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ inputs.node-version }}
+    - name: Install datadog-ci
+      uses: DataDog/install-datadog-ci-github-action@7960c07e413c56665e12346b34eec80089a7260e # v1.0.2
 
     - name: Upload the JUnit files
       shell: bash
       run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
+        datadog-ci junit upload \
           --max-concurrency ${{ inputs.concurrency }} \
           ${{ inputs.logs == 'true' && '--logs' || '' }} \
           ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
