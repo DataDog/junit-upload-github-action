@@ -1,4 +1,4 @@
-# Composite action to upload junit test result files to Datadog Test Optimization
+# Node.js action to upload junit test result files to Datadog Test Optimization
 name: "Datadog JUnitXML Upload"
 description: "Upload JUnitXML reports files to Datadog Test Optimization"
 inputs:
@@ -24,10 +24,6 @@ inputs:
     required: true
     description: Controls the maximum number of concurrent file uploads.
     default: "20"
-  node-version:
-    required: true
-    description: The node version used to install datadog-ci
-    default: "20"
   tags:
     required: false
     description: Datadog tags to associate with the uploaded test results.
@@ -40,35 +36,10 @@ inputs:
   logs:
     required: false
     description: Set to "true" to enable forwarding content from XML reports as logs.
-  datadog-ci-version:
-    required: false
-    description: The version of the @datadog/datadog-ci package to use. It defaults to the latest release (`latest`).
-    default: "latest"
   extra-args:
     default: ""
     description: Extra args to be passed to the datadog-ci cli.
     required: false
 runs:
-  using: "composite"
-  steps:
-    - name: Install node
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ inputs.node-version }}
-
-    - name: Upload the JUnit files
-      shell: bash
-      run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
-          --max-concurrency ${{ inputs.concurrency }} \
-          ${{ inputs.logs == 'true' && '--logs' || '' }} \
-          ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
-          ${{ inputs.ignored-paths != '' && format('--ignored-paths {0}', inputs.ignored-paths) || '' }} \
-          ${{ inputs.service != '' && format('--service {0}', inputs.service) || '' }} \
-          ${{ inputs.extra-args }} \
-          ${{ inputs.files }}
-      env:
-        DD_API_KEY: ${{ inputs.api_key }}
-        DD_SITE: ${{ inputs.site }}
-        DD_ENV: ${{ inputs.env }}
-        DD_TAGS: ${{ inputs.tags }}
+  using: node24
+  main: dist/index.js

@@ -1,0 +1,28 @@
+{
+  "name": "junit-upload-github-action",
+  "version": "1.0.0",
+  "description": "Upload JUnitXML reports files to Datadog Test Optimization",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt --asset-builds",
+    "test": "node check-junit-upload.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DataDog/junit-upload-github-action.git"
+  },
+  "keywords": [
+    "github-actions",
+    "datadog",
+    "junit",
+    "testing"
+  ],
+  "author": "Datadog",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@datadog/datadog-ci": "^5.11.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1"
+  }
+}
