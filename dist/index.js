@@ -126,8 +126,6 @@ async function run() {
     // Add files path
     args.push(files);
 
-    console.log('Executing datadog-ci with args:', args.join(' '));
-
     // Execute datadog-ci CLI by requiring and running it
     // We'll use the CLI entry point from the bundled package
     const datadogCiPath = __nccwpck_require__.ab + "cli.js";
@@ -146,8 +144,6 @@ async function run() {
     if (exitCode !== 0) {
       throw new Error(`datadog-ci exited with code ${exitCode}`);
     }
-
-    console.log('JUnit files uploaded successfully');
   } catch (error) {
     console.error('Error:', error.message);
     process.exit(1);
