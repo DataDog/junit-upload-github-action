@@ -1,4 +1,4 @@
-const { spawn } = require('child_process');
+const { PluginCommand } = require('@datadog/datadog-ci-plugin-junit/commands/upload');
 
 /**
  * Get input value from environment variable
@@ -7,66 +7,6 @@ const { spawn } = require('child_process');
 function getInput(name) {
   const envName = `INPUT_${name.replace(/-/g, '_').toUpperCase()}`;
   return process.env[envName] || '';
-}
-
-/**
- * Build command arguments for datadog-ci junit upload
- * @param {Object} inputs - Parsed input values
- * @returns {string[]} Command arguments array
- */
-function buildArgs(inputs) {
-  const args = ['junit', 'upload'];
-
-  args.push('--max-concurrency', inputs.concurrency);
-
-  if (inputs.logs === 'true') {
-    args.push('--logs');
-  }
-
-  if (inputs.autoDiscovery === 'true') {
-    args.push('--auto-discovery');
-  }
-
-  if (inputs.ignoredPaths) {
-    args.push('--ignored-paths', inputs.ignoredPaths);
-  }
-
-  if (inputs.service) {
-    args.push('--service', inputs.service);
-  }
-
-  // Add extra args if provided
-  if (inputs.extraArgs) {
-    const parsed = inputs.extraArgs.split(' ').filter(arg => arg.trim());
-    args.push(...parsed);
-  }
-
-  // Add files path
-  args.push(inputs.files);
-
-  return args;
-}
-
-/**
- * Build environment variables for datadog-ci
- * @param {Object} inputs - Parsed input values
- * @returns {Object} Environment variables
- */
-function buildEnv(inputs) {
-  const env = { ...process.env };
-
-  env.DD_API_KEY = inputs.apiKey;
-  env.DD_SITE = inputs.site;
-
-  if (inputs.env) {
-    env.DD_ENV = inputs.env;
-  }
-
-  if (inputs.tags) {
-    env.DD_TAGS = inputs.tags;
-  }
-
-  return env;
 }
 
 /**
@@ -101,27 +41,49 @@ async function run() {
       throw new Error('api_key is required');
     }
 
-    // Build command arguments and environment
-    const args = buildArgs(inputs);
-    const env = buildEnv(inputs);
+    // Set environment variables for datadog-ci
+    process.env.DD_API_KEY = inputs.apiKey;
+    process.env.DD_SITE = inputs.site;
+    if (inputs.env) process.env.DD_ENV = inputs.env;
+    if (inputs.tags) process.env.DD_TAGS = inputs.tags;
 
-    // Execute datadog-ci CLI by requiring and running it
-    // We'll use the CLI entry point from the bundled package
-    const datadogCiPath = require.resolve('@datadog/datadog-ci/dist/cli.js');
+    // Build arguments array for the command
+    const args = ['junit', 'upload'];
 
-    // Execute as a child process with node
-    const child = spawn(process.execPath, [datadogCiPath, ...args], {
-      stdio: 'inherit',
-      env
-    });
+    args.push('--max-concurrency', inputs.concurrency);
 
-    // Wait for the process to complete
-    const exitCode = await new Promise((resolve) => {
-      child.on('close', resolve);
-    });
+    if (inputs.logs === 'true') {
+      args.push('--logs');
+    }
 
-    if (exitCode !== 0) {
-      throw new Error(`datadog-ci exited with code ${exitCode}`);
+    if (inputs.autoDiscovery === 'true') {
+      args.push('--auto-discovery');
+    }
+
+    if (inputs.ignoredPaths) {
+      args.push('--ignored-paths', inputs.ignoredPaths);
+    }
+
+    if (inputs.service) {
+      args.push('--service', inputs.service);
+    }
+
+    if (inputs.extraArgs) {
+      const parsed = inputs.extraArgs.split(' ').filter(arg => arg.trim());
+      args.push(...parsed);
+    }
+
+    args.push(inputs.files);
+
+    // Execute the junit upload command programmatically
+    // Simulate CLI invocation by setting up argv
+    process.argv = ['node', 'datadog-ci', ...args];
+
+    const command = new PluginCommand();
+    const exitCode = await command.execute();
+
+    if (exitCode !== 0 && exitCode !== undefined) {
+      throw new Error(`junit upload failed with code ${exitCode}`);
     }
   } catch (error) {
     console.error('Error:', error.message);
@@ -130,7 +92,7 @@ async function run() {
 }
 
 // Export for testing
-module.exports = { buildArgs, buildEnv, parseInputs, run };
+module.exports = { parseInputs, run };
 
 // Run the action if executed directly
 if (require.main === module) {

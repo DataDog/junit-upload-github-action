@@ -4,7 +4,7 @@
   "description": "Upload JUnitXML reports files to Datadog Test Optimization",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt --external @datadog/datadog-ci --external @datadog/datadog-ci-plugin-junit",
+    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

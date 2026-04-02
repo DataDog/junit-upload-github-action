@@ -49,3 +49,28 @@ You can also test locally by:
 
 1. Creating test JUnit XML files in `ci/fixtures/`
 2. Using the action in a test repository with `uses: username/junit-upload-github-action@your-branch`
+
+## Architecture
+
+This action uses a bundled architecture for supply chain security:
+
+- **Source**: `src/index.js` - Main action logic
+- **Bundled**: `dist/` - Compiled bundle including `@datadog/datadog-ci` and all dependencies
+- **Locked**: `yarn.lock` - Dependency versions are locked at build time
+- **Security**: No runtime `npx` installations - everything is bundled and verified
+
+When you make changes:
+1. Edit `src/index.js`
+2. Run `yarn build` to update `dist/`
+3. Commit both `src/` and `dist/`
+
+## Resources
+
+- [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
+- [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
+- [GitHub Help](https://help.github.com)
+- [Writing good commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+
+Thanks! ❤️
+
+Datadog Team
