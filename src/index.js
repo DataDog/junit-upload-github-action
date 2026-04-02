@@ -103,6 +103,12 @@ async function run() {
       command.tags = inputs.tags.split(',').map(tag => tag.trim());
     }
 
+    // Explicitly set optional array fields to undefined to avoid Option object issues
+    command.rawXPathTags = undefined;
+    command.measures = undefined;
+    command.reportTags = undefined;
+    command.reportMeasures = undefined;
+
     const exitCode = await command.execute();
 
     if (exitCode !== 0 && exitCode !== undefined) {
