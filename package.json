@@ -22,10 +22,10 @@
   "author": "Datadog",
   "license": "Apache-2.0",
   "dependencies": {
-    "@datadog/datadog-ci": "^5.11.0"
+    "@datadog/datadog-ci": "5.11.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.1",
-    "jest": "^30.3.0"
+    "@vercel/ncc": "0.38.1",
+    "jest": "30.3.0"
   }
 }
