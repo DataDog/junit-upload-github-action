@@ -47,34 +47,6 @@ async function run() {
     if (inputs.env) process.env.DD_ENV = inputs.env;
     if (inputs.tags) process.env.DD_TAGS = inputs.tags;
 
-    // Build arguments array for the command
-    const args = ['junit', 'upload'];
-
-    args.push('--max-concurrency', inputs.concurrency);
-
-    if (inputs.logs === 'true') {
-      args.push('--logs');
-    }
-
-    if (inputs.autoDiscovery === 'true') {
-      args.push('--auto-discovery');
-    }
-
-    if (inputs.ignoredPaths) {
-      args.push('--ignored-paths', inputs.ignoredPaths);
-    }
-
-    if (inputs.service) {
-      args.push('--service', inputs.service);
-    }
-
-    if (inputs.extraArgs) {
-      const parsed = inputs.extraArgs.split(' ').filter(arg => arg.trim());
-      args.push(...parsed);
-    }
-
-    args.push(inputs.files);
-
     // Execute the junit upload command programmatically
     // Set up CLI context with stdio streams
     const context = {
@@ -84,15 +56,35 @@ async function run() {
       colorDepth: process.stdout.isTTY ? 8 : 1
     };
 
-    // Simulate CLI invocation by setting up argv
-    process.argv = ['node', 'datadog-ci', ...args];
-
     const command = new PluginCommand();
     command.context = context;
     command.cli = {
       binaryName: 'datadog-ci',
       binaryVersion: '5.11.0'
     };
+
+    // Set command properties directly instead of using CLI args
+    command.basePaths = [inputs.files];
+    command.maxConcurrency = parseInt(inputs.concurrency, 10);
+    command.logs = inputs.logs === 'true';
+    command.automaticReportsDiscovery = inputs.autoDiscovery === 'true';
+
+    if (inputs.ignoredPaths) {
+      command.ignoredPaths = inputs.ignoredPaths;
+    }
+
+    if (inputs.service) {
+      command.service = inputs.service;
+    }
+
+    if (inputs.env) {
+      command.env = inputs.env;
+    }
+
+    // Parse tags if provided
+    if (inputs.tags) {
+      command.tags = inputs.tags.split(',').map(tag => tag.trim());
+    }
 
     const exitCode = await command.execute();
 
