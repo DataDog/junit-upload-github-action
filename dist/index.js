@@ -57609,12 +57609,29 @@ async function run() {
       binaryVersion: '5.11.0'
     };
 
-    // Set command properties directly instead of using CLI args
+    // Set command properties to match Clipanion Option types
+    // basePaths: string[] (from Option.Rest)
     command.basePaths = [inputs.files];
-    command.maxConcurrency = parseInt(inputs.concurrency, 10);
-    command.logs = inputs.logs === 'true';
-    command.automaticReportsDiscovery = inputs.autoDiscovery === 'true';
 
+    // maxConcurrency: string (from Option.String with validator)
+    command.maxConcurrency = inputs.concurrency;
+
+    // logs: string 'true'/'false' (from Option.String with tolerateBoolean)
+    command.logs = inputs.logs || 'false';
+
+    // automaticReportsDiscovery: string 'true'/'false' (from Option.String with tolerateBoolean)
+    command.automaticReportsDiscovery = inputs.autoDiscovery || 'true';
+
+    // skipGitMetadataUpload: string 'true'/'false' (from Option.String with tolerateBoolean)
+    command.skipGitMetadataUpload = 'false';
+
+    // verbose: boolean (from Option.Boolean)
+    command.verbose = false;
+
+    // dryRun: boolean (from Option.Boolean)
+    command.dryRun = false;
+
+    // Optional string fields
     if (inputs.ignoredPaths) {
       command.ignoredPaths = inputs.ignoredPaths;
     }
@@ -57627,7 +57644,7 @@ async function run() {
       command.env = inputs.env;
     }
 
-    // Parse tags if provided
+    // tags: string[] (from Option.Array)
     if (inputs.tags) {
       command.tags = inputs.tags.split(',').map(tag => tag.trim());
     }
