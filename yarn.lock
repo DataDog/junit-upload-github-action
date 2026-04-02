@@ -378,7 +378,7 @@
     chalk "3.0.0"
     packageurl-js "2.0.1"
 
-"@datadog/datadog-ci@^5.11.0":
+"@datadog/datadog-ci@5.11.0":
   version "5.11.0"
   resolved "https://registry.yarnpkg.com/@datadog/datadog-ci/-/datadog-ci-5.11.0.tgz#4d9d4e674ba2e87654e8d98ee442099c0d1d0cbf"
   integrity sha512-4N/WsfnQVYJNxGtDIOhg4sUkZalDo8h+toSXR/GAw6XU81e1bOj3GvleL6IHUQ06KyPdurqPZKB4Za1CbCsT7g==
@@ -959,10 +959,10 @@
   resolved "https://registry.yarnpkg.com/@unrs/resolver-binding-win32-x64-msvc/-/resolver-binding-win32-x64-msvc-1.11.1.tgz#538b1e103bf8d9864e7b85cc96fa8d6fb6c40777"
   integrity sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==
 
-"@vercel/ncc@^0.38.1":
-  version "0.38.4"
-  resolved "https://registry.yarnpkg.com/@vercel/ncc/-/ncc-0.38.4.tgz#e1fb8be9e7ed33bf44c121131d4c6e95f784afac"
-  integrity sha512-8LwjnlP39s08C08J5NstzriPvW1SP8Zfpp1BvC2sI35kPeZnHfxVkCwu4/+Wodgnd60UtT1n8K8zw+Mp7J9JmQ==
+"@vercel/ncc@0.38.1":
+  version "0.38.1"
+  resolved "https://registry.yarnpkg.com/@vercel/ncc/-/ncc-0.38.1.tgz#13f08738111e1d9e8a22fd6141f3590e54d9a60e"
+  integrity sha512-IBBb+iI2NLu4VQn3Vwldyi2QwaXt5+hTyh58ggAMoCGE6DJmPvwL3KPBWcJl1m9LYPChBLE980Jw+CS4Wokqxw==
 
 agent-base@^7.0.2, agent-base@^7.1.0, agent-base@^7.1.2:
   version "7.1.4"
@@ -2372,7 +2372,7 @@ jest-worker@30.3.0:
     merge-stream "^2.0.0"
     supports-color "^8.1.1"
 
-jest@^30.3.0:
+jest@30.3.0:
   version "30.3.0"
   resolved "https://registry.yarnpkg.com/jest/-/jest-30.3.0.tgz#6460b889dd805e9677400505f16f1d9b14c285a3"
   integrity sha512-AkXIIFcaazymvey2i/+F94XRnM6TsVLZDhBMLsd1Sf/W0wzsvvpjeyUrCZD6HGG4SDYPgDJDBKeiJTBb10WzMg==
