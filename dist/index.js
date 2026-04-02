@@ -57631,18 +57631,11 @@ async function run() {
     // dryRun: boolean (from Option.Boolean)
     command.dryRun = false;
 
-    // Optional string fields
-    if (inputs.ignoredPaths) {
-      command.ignoredPaths = inputs.ignoredPaths;
-    }
-
-    if (inputs.service) {
-      command.service = inputs.service;
-    }
-
-    if (inputs.env) {
-      command.env = inputs.env;
-    }
+    // Optional string fields (must be explicitly set to avoid Option objects)
+    command.ignoredPaths = inputs.ignoredPaths || undefined;
+    command.service = inputs.service || undefined;
+    command.env = inputs.env || undefined;
+    command.gitRepositoryURL = undefined;
 
     // tags: string[] (from Option.Array)
     if (inputs.tags) {
