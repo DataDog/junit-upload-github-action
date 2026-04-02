@@ -1,6 +1,12 @@
-# Composite action to upload junit test result files to Datadog Test Optimization
+# Unless explicitly stated otherwise all files in this repository are licensed
+# under the Apache License Version 2.0.
+# This product includes software developed at Datadog (https://www.datadoghq.com/)
+# Copyright 2019-present Datadog, Inc.
 name: "Datadog JUnitXML Upload"
 description: "Upload JUnitXML reports files to Datadog Test Optimization"
+branding:
+  icon: "upload-cloud"
+  color: "purple"
 inputs:
   api_key:
     required: true
@@ -26,7 +32,7 @@ inputs:
     default: "20"
   node-version:
     required: true
-    description: The node version used to install datadog-ci
+    description: The node version used to install datadog-ci (deprecated, no longer used)
     default: "20"
   tags:
     required: false
@@ -51,24 +57,53 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install node
-      uses: actions/setup-node@v6
+    - name: Install datadog-ci
+      uses: DataDog/install-datadog-ci-github-action@7960c07e413c56665e12346b34eec80089a7260e # v1.0.2
       with:
-        node-version: ${{ inputs.node-version }}
+        version: ${{ inputs.datadog-ci-version == 'latest' && 'v5' || inputs.datadog-ci-version }}
 
-    - name: Upload the JUnit files
+    - name: Upload JUnit XML report files
       shell: bash
       run: |
-        npx @datadog/datadog-ci@${{ inputs.datadog-ci-version}} junit upload \
-          --max-concurrency ${{ inputs.concurrency }} \
-          ${{ inputs.logs == 'true' && '--logs' || '' }} \
-          ${{ inputs.auto-discovery == 'true' && '--auto-discovery' || '' }} \
-          ${{ inputs.ignored-paths != '' && format('--ignored-paths {0}', inputs.ignored-paths) || '' }} \
-          ${{ inputs.service != '' && format('--service {0}', inputs.service) || '' }} \
-          ${{ inputs.extra-args }} \
-          ${{ inputs.files }}
+        # Build optional arguments array
+        optional_args=()
+        [[ -n "$IGNORED_PATHS" ]] && optional_args+=(--ignored-paths "$IGNORED_PATHS")
+        [[ -n "$SERVICE" ]] && optional_args+=(--service "$SERVICE")
+        [[ -n "$ENV" ]] && optional_args+=(--env "$ENV")
+        [[ "$LOGS" == "true" ]] && optional_args+=(--logs)
+        [[ "$AUTO_DISCOVERY" == "true" ]] && optional_args+=(--auto-discovery)
+
+        # Build tags array
+        tags_args=()
+        if [[ -n "$TAGS" ]]; then
+          IFS=',' read -ra tag_items <<< "$TAGS"
+          for tag in "${tag_items[@]}"; do
+            # Trim leading/trailing whitespace
+            tag="${tag#"${tag%%[![:space:]]*}"}"
+            tag="${tag%"${tag##*[![:space:]]}"}"
+            if [[ -n "$tag" ]]; then
+              tags_args+=(--tags "$tag")
+            fi
+          done
+        fi
+
+        # shellcheck disable=SC2086 -- intentional: word-split $EXTRA_ARGS, $FILES for multi-value expansion
+        datadog-ci junit upload \
+          --max-concurrency "$CONCURRENCY" \
+          "${optional_args[@]}" \
+          "${tags_args[@]}" \
+          $EXTRA_ARGS \
+          $FILES
       env:
         DD_API_KEY: ${{ inputs.api_key }}
         DD_SITE: ${{ inputs.site }}
         DD_ENV: ${{ inputs.env }}
         DD_TAGS: ${{ inputs.tags }}
+        IGNORED_PATHS: ${{ inputs.ignored-paths }}
+        SERVICE: ${{ inputs.service }}
+        ENV: ${{ inputs.env }}
+        LOGS: ${{ inputs.logs }}
+        AUTO_DISCOVERY: ${{ inputs.auto-discovery }}
+        CONCURRENCY: ${{ inputs.concurrency }}
+        EXTRA_ARGS: ${{ inputs.extra-args }}
+        FILES: ${{ inputs.files }}
