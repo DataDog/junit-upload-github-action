@@ -57622,10 +57622,24 @@ async function run() {
     args.push(inputs.files);
 
     // Execute the junit upload command programmatically
+    // Set up CLI context with stdio streams
+    const context = {
+      stdin: process.stdin,
+      stdout: process.stdout,
+      stderr: process.stderr,
+      colorDepth: process.stdout.isTTY ? 8 : 1
+    };
+
     // Simulate CLI invocation by setting up argv
     process.argv = ['node', 'datadog-ci', ...args];
 
     const command = new PluginCommand();
+    command.context = context;
+    command.cli = {
+      binaryName: 'datadog-ci',
+      binaryVersion: '5.11.0'
+    };
+
     const exitCode = await command.execute();
 
     if (exitCode !== 0 && exitCode !== undefined) {
