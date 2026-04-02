@@ -39,6 +39,13 @@ jobs:
         version: ["latest", "^5.0.0", "~5.0.0", ">=5.0.0", "5.x"]
     steps:
       - uses: actions/checkout@v4
+      - name: Sanitize version for tag
+        id: sanitize
+        run: |
+          version="${{ matrix.version }}"
+          # Replace special characters with safe equivalents for tags
+          safe_version=$(echo "$version" | sed 's/\^/caret-/g; s/~/tilde-/g; s/>=/gte-/g; s/>/gt-/g; s/<=/lte-/g; s/</lt-/g')
+          echo "safe_version=${safe_version}" >> "$GITHUB_OUTPUT"
       - name: Upload reports using legacy version syntax
         uses: ./
         with:
@@ -47,14 +54,14 @@ jobs:
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
           env: ci
-          tags: "foo:legacy,alpha:legacy"
+          tags: "foo:legacy,alpha:legacy,version.syntax:${{ steps.sanitize.outputs.safe_version }}"
           datadog-ci-version: ${{ matrix.version }}
       - name: Check that test data can be queried
         run: |
           npm install @datadog/datadog-api-client
           node ./check-junit-upload.js
         env:
-          EXTRA_TAGS: "@foo:legacy @alpha:legacy"
+          EXTRA_TAGS: "@foo:legacy @alpha:legacy @version.syntax:${{ steps.sanitize.outputs.safe_version }}"
           DD_API_KEY: ${{ secrets.DD_API_KEY_CI_VISIBILITY }}
           DD_APP_KEY: ${{ secrets.DD_APP_KEY_CI_VISIBILITY }}
           DD_SERVICE: junit-upload-github-action-tests
