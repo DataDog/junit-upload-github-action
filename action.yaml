@@ -47,6 +47,8 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # TODO: Remove this step in the next major version (v3.0.0)
+    #       Users should migrate to GitHub release tag syntax: v5, v5.10.0, etc.
     - name: Translate version format (backwards compatibility)
       id: translate-version
       shell: bash
