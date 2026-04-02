@@ -24,10 +24,6 @@ inputs:
     required: true
     description: Controls the maximum number of concurrent file uploads.
     default: "20"
-  node-version:
-    required: true
-    description: The node version used to install datadog-ci
-    default: "20"
   tags:
     required: false
     description: Datadog tags to associate with the uploaded test results.
@@ -42,8 +38,8 @@ inputs:
     description: Set to "true" to enable forwarding content from XML reports as logs.
   datadog-ci-version:
     required: false
-    description: The version of the @datadog/datadog-ci package to use. It defaults to the latest release (`latest`).
-    default: "latest"
+    description: Version of datadog-ci to install. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin.
+    default: "v5"
   extra-args:
     default: ""
     description: Extra args to be passed to the datadog-ci cli.
@@ -53,6 +49,8 @@ runs:
   steps:
     - name: Install datadog-ci
       uses: DataDog/install-datadog-ci-github-action@7960c07e413c56665e12346b34eec80089a7260e # v1.0.2
+      with:
+        version: ${{ inputs.datadog-ci-version }}
 
     - name: Upload the JUnit files
       shell: bash
