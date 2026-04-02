@@ -47,14 +47,14 @@ jobs:
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
           env: ci
-          tags: "foo:legacy,alpha:legacy,version.syntax:${{ matrix.version}}"
+          tags: "foo:legacy,alpha:legacy"
           datadog-ci-version: ${{ matrix.version }}
       - name: Check that test data can be queried
         run: |
           npm install @datadog/datadog-api-client
           node ./check-junit-upload.js
         env:
-          EXTRA_TAGS: "@foo:legacy @alpha:legacy @version.syntax:${{ matrix.version}}"
+          EXTRA_TAGS: "@foo:legacy @alpha:legacy"
           DD_API_KEY: ${{ secrets.DD_API_KEY_CI_VISIBILITY }}
           DD_APP_KEY: ${{ secrets.DD_APP_KEY_CI_VISIBILITY }}
           DD_SERVICE: junit-upload-github-action-tests
