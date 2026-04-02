@@ -1,6 +1,151 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 105:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { spawn } = __nccwpck_require__(317);
+
+/**
+ * Get input value from environment variable
+ * GitHub Actions converts inputs to env vars with INPUT_ prefix
+ */
+function getInput(name) {
+  const envName = `INPUT_${name.replace(/-/g, '_').toUpperCase()}`;
+  return process.env[envName] || '';
+}
+
+/**
+ * Build command arguments for datadog-ci junit upload
+ * @param {Object} inputs - Parsed input values
+ * @returns {string[]} Command arguments array
+ */
+function buildArgs(inputs) {
+  const args = ['junit', 'upload'];
+
+  args.push('--max-concurrency', inputs.concurrency);
+
+  if (inputs.logs === 'true') {
+    args.push('--logs');
+  }
+
+  if (inputs.autoDiscovery === 'true') {
+    args.push('--auto-discovery');
+  }
+
+  if (inputs.ignoredPaths) {
+    args.push('--ignored-paths', inputs.ignoredPaths);
+  }
+
+  if (inputs.service) {
+    args.push('--service', inputs.service);
+  }
+
+  // Add extra args if provided
+  if (inputs.extraArgs) {
+    const parsed = inputs.extraArgs.split(' ').filter(arg => arg.trim());
+    args.push(...parsed);
+  }
+
+  // Add files path
+  args.push(inputs.files);
+
+  return args;
+}
+
+/**
+ * Build environment variables for datadog-ci
+ * @param {Object} inputs - Parsed input values
+ * @returns {Object} Environment variables
+ */
+function buildEnv(inputs) {
+  const env = { ...process.env };
+
+  env.DD_API_KEY = inputs.apiKey;
+  env.DD_SITE = inputs.site;
+
+  if (inputs.env) {
+    env.DD_ENV = inputs.env;
+  }
+
+  if (inputs.tags) {
+    env.DD_TAGS = inputs.tags;
+  }
+
+  return env;
+}
+
+/**
+ * Parse inputs from environment variables
+ * @returns {Object} Parsed inputs
+ */
+function parseInputs() {
+  return {
+    apiKey: getInput('api_key'),
+    site: getInput('site') || 'datadoghq.com',
+    files: getInput('files') || '.',
+    autoDiscovery: getInput('auto-discovery') || 'true',
+    ignoredPaths: getInput('ignored-paths'),
+    concurrency: getInput('concurrency') || '20',
+    tags: getInput('tags'),
+    service: getInput('service'),
+    env: getInput('env'),
+    logs: getInput('logs'),
+    extraArgs: getInput('extra-args')
+  };
+}
+
+/**
+ * Main action function
+ */
+async function run() {
+  try {
+    const inputs = parseInputs();
+
+    // Validate required inputs
+    if (!inputs.apiKey) {
+      throw new Error('api_key is required');
+    }
+
+    // Build command arguments and environment
+    const args = buildArgs(inputs);
+    const env = buildEnv(inputs);
+
+    // Execute datadog-ci CLI by requiring and running it
+    // We'll use the CLI entry point from the bundled package
+    const datadogCiPath = __nccwpck_require__.ab + "cli.js";
+
+    // Execute as a child process with node
+    const child = spawn(process.execPath, [__nccwpck_require__.ab + "cli.js", ...args], {
+      stdio: 'inherit',
+      env
+    });
+
+    // Wait for the process to complete
+    const exitCode = await new Promise((resolve) => {
+      child.on('close', resolve);
+    });
+
+    if (exitCode !== 0) {
+      throw new Error(`datadog-ci exited with code ${exitCode}`);
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
+}
+
+// Export for testing
+module.exports = { buildArgs, buildEnv, parseInputs, run };
+
+// Run the action if executed directly
+if (require.main === require.cache[eval('__filename')]) {
+  run();
+}
+
+
+/***/ }),
+
 /***/ 317:
 /***/ ((module) => {
 
@@ -47,104 +192,13 @@ module.exports = require("child_process");
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-const { spawn } = __nccwpck_require__(317);
-
-/**
- * Get input value from environment variable
- * GitHub Actions converts inputs to env vars with INPUT_ prefix
- */
-function getInput(name) {
-  const envName = `INPUT_${name.replace(/-/g, '_').toUpperCase()}`;
-  return process.env[envName] || '';
-}
-
-/**
- * Main action function
- */
-async function run() {
-  try {
-    // Get inputs
-    const apiKey = getInput('api_key');
-    const site = getInput('site') || 'datadoghq.com';
-    const files = getInput('files') || '.';
-    const autoDiscovery = getInput('auto-discovery') || 'true';
-    const ignoredPaths = getInput('ignored-paths');
-    const concurrency = getInput('concurrency') || '20';
-    const tags = getInput('tags');
-    const service = getInput('service');
-    const env = getInput('env');
-    const logs = getInput('logs');
-    const extraArgs = getInput('extra-args');
-
-    // Validate required inputs
-    if (!apiKey) {
-      throw new Error('api-key is required');
-    }
-
-    // Set environment variables for datadog-ci
-    process.env.DD_API_KEY = apiKey;
-    process.env.DD_SITE = site;
-    if (env) process.env.DD_ENV = env;
-    if (tags) process.env.DD_TAGS = tags;
-
-    // Build command arguments
-    const args = ['junit', 'upload'];
-
-    args.push('--max-concurrency', concurrency);
-
-    if (logs === 'true') {
-      args.push('--logs');
-    }
-
-    if (autoDiscovery === 'true') {
-      args.push('--auto-discovery');
-    }
-
-    if (ignoredPaths) {
-      args.push('--ignored-paths', ignoredPaths);
-    }
-
-    if (service) {
-      args.push('--service', service);
-    }
-
-    // Add extra args if provided
-    if (extraArgs) {
-      args.push(...extraArgs.split(' ').filter(arg => arg));
-    }
-
-    // Add files path
-    args.push(files);
-
-    // Execute datadog-ci CLI by requiring and running it
-    // We'll use the CLI entry point from the bundled package
-    const datadogCiPath = __nccwpck_require__.ab + "cli.js";
-
-    // Execute as a child process with node
-    const child = spawn(process.execPath, [__nccwpck_require__.ab + "cli.js", ...args], {
-      stdio: 'inherit',
-      env: process.env
-    });
-
-    // Wait for the process to complete
-    const exitCode = await new Promise((resolve) => {
-      child.on('close', resolve);
-    });
-
-    if (exitCode !== 0) {
-      throw new Error(`datadog-ci exited with code ${exitCode}`);
-    }
-  } catch (error) {
-    console.error('Error:', error.message);
-    process.exit(1);
-  }
-}
-
-// Run the action
-run();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(105);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map

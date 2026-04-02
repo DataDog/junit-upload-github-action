@@ -10,62 +10,100 @@ function getInput(name) {
 }
 
 /**
+ * Build command arguments for datadog-ci junit upload
+ * @param {Object} inputs - Parsed input values
+ * @returns {string[]} Command arguments array
+ */
+function buildArgs(inputs) {
+  const args = ['junit', 'upload'];
+
+  args.push('--max-concurrency', inputs.concurrency);
+
+  if (inputs.logs === 'true') {
+    args.push('--logs');
+  }
+
+  if (inputs.autoDiscovery === 'true') {
+    args.push('--auto-discovery');
+  }
+
+  if (inputs.ignoredPaths) {
+    args.push('--ignored-paths', inputs.ignoredPaths);
+  }
+
+  if (inputs.service) {
+    args.push('--service', inputs.service);
+  }
+
+  // Add extra args if provided
+  if (inputs.extraArgs) {
+    const parsed = inputs.extraArgs.split(' ').filter(arg => arg.trim());
+    args.push(...parsed);
+  }
+
+  // Add files path
+  args.push(inputs.files);
+
+  return args;
+}
+
+/**
+ * Build environment variables for datadog-ci
+ * @param {Object} inputs - Parsed input values
+ * @returns {Object} Environment variables
+ */
+function buildEnv(inputs) {
+  const env = { ...process.env };
+
+  env.DD_API_KEY = inputs.apiKey;
+  env.DD_SITE = inputs.site;
+
+  if (inputs.env) {
+    env.DD_ENV = inputs.env;
+  }
+
+  if (inputs.tags) {
+    env.DD_TAGS = inputs.tags;
+  }
+
+  return env;
+}
+
+/**
+ * Parse inputs from environment variables
+ * @returns {Object} Parsed inputs
+ */
+function parseInputs() {
+  return {
+    apiKey: getInput('api_key'),
+    site: getInput('site') || 'datadoghq.com',
+    files: getInput('files') || '.',
+    autoDiscovery: getInput('auto-discovery') || 'true',
+    ignoredPaths: getInput('ignored-paths'),
+    concurrency: getInput('concurrency') || '20',
+    tags: getInput('tags'),
+    service: getInput('service'),
+    env: getInput('env'),
+    logs: getInput('logs'),
+    extraArgs: getInput('extra-args')
+  };
+}
+
+/**
  * Main action function
  */
 async function run() {
   try {
-    // Get inputs
-    const apiKey = getInput('api_key');
-    const site = getInput('site') || 'datadoghq.com';
-    const files = getInput('files') || '.';
-    const autoDiscovery = getInput('auto-discovery') || 'true';
-    const ignoredPaths = getInput('ignored-paths');
-    const concurrency = getInput('concurrency') || '20';
-    const tags = getInput('tags');
-    const service = getInput('service');
-    const env = getInput('env');
-    const logs = getInput('logs');
-    const extraArgs = getInput('extra-args');
+    const inputs = parseInputs();
 
     // Validate required inputs
-    if (!apiKey) {
-      throw new Error('api-key is required');
+    if (!inputs.apiKey) {
+      throw new Error('api_key is required');
     }
 
-    // Set environment variables for datadog-ci
-    process.env.DD_API_KEY = apiKey;
-    process.env.DD_SITE = site;
-    if (env) process.env.DD_ENV = env;
-    if (tags) process.env.DD_TAGS = tags;
-
-    // Build command arguments
-    const args = ['junit', 'upload'];
-
-    args.push('--max-concurrency', concurrency);
-
-    if (logs === 'true') {
-      args.push('--logs');
-    }
-
-    if (autoDiscovery === 'true') {
-      args.push('--auto-discovery');
-    }
-
-    if (ignoredPaths) {
-      args.push('--ignored-paths', ignoredPaths);
-    }
-
-    if (service) {
-      args.push('--service', service);
-    }
-
-    // Add extra args if provided
-    if (extraArgs) {
-      args.push(...extraArgs.split(' ').filter(arg => arg));
-    }
-
-    // Add files path
-    args.push(files);
+    // Build command arguments and environment
+    const args = buildArgs(inputs);
+    const env = buildEnv(inputs);
 
     // Execute datadog-ci CLI by requiring and running it
     // We'll use the CLI entry point from the bundled package
@@ -74,7 +112,7 @@ async function run() {
     // Execute as a child process with node
     const child = spawn(process.execPath, [datadogCiPath, ...args], {
       stdio: 'inherit',
-      env: process.env
+      env
     });
 
     // Wait for the process to complete
@@ -91,5 +129,10 @@ async function run() {
   }
 }
 
-// Run the action
-run();
+// Export for testing
+module.exports = { buildArgs, buildEnv, parseInputs, run };
+
+// Run the action if executed directly
+if (require.main === module) {
+  run();
+}

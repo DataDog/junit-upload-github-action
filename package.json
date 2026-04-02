@@ -5,7 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist --source-map --license licenses.txt --asset-builds",
-    "test": "node check-junit-upload.js"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -23,6 +25,7 @@
     "@datadog/datadog-ci": "^5.11.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.1"
+    "@vercel/ncc": "^0.38.1",
+    "jest": "^30.3.0"
   }
 }
