@@ -1,5 +1,4 @@
 const { spawn } = require('child_process');
-const path = require('path');
 
 /**
  * Get input value from environment variable

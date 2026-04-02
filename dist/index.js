@@ -7,14 +7,6 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 module.exports = require("child_process");
 
-/***/ }),
-
-/***/ 928:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("path");
-
 /***/ })
 
 /******/ 	});
@@ -57,7 +49,6 @@ module.exports = require("path");
 /************************************************************************/
 var __webpack_exports__ = {};
 const { spawn } = __nccwpck_require__(317);
-const path = __nccwpck_require__(928);
 
 /**
  * Get input value from environment variable
