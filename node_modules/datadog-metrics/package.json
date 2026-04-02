@@ -1,0 +1,36 @@
+{
+  "name": "datadog-metrics",
+  "version": "0.9.3",
+  "description": "Buffered metrics reporting via the DataDog HTTP API",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dbader/node-datadog-metrics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dbader/node-datadog-metrics/issues"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec",
+    "check-codestyle": "jshint --reporter node_modules/jshint-stylish-ex/stylish.js *.js ./lib/*.js ./test/*.js && jscs --config .jscsrc *.js ./lib/*.js ./test/*.js"
+  },
+  "keywords": [
+    "datadog",
+    "metrics",
+    "stats"
+  ],
+  "author": "Daniel Bader <mail@dbader.org> (http://dbader.org/)",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "3.5.0",
+    "chai-string": "1.1.6",
+    "jscs": "2.9.0",
+    "jshint": "^2.12.0",
+    "jshint-stylish-ex": "0.2.0",
+    "mocha": "2.4.5"
+  },
+  "dependencies": {
+    "debug": "3.1.0",
+    "dogapi": "2.8.4"
+  }
+}
