@@ -24,6 +24,9 @@ jobs:
       - name: Check datadog-ci version bump script
         run: |
           set -euo pipefail
+          bash -n scripts/bump-datadog-ci-version.sh
+          bash -n scripts/create-datadog-ci-bump-pr.sh
+
           tmpdir=$(mktemp -d)
           cp action.yaml README.md "$tmpdir"/
           mkdir "$tmpdir/scripts"

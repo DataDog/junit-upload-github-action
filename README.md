@@ -42,3 +42,9 @@ By default, this action installs the exact `datadog-ci` release pinned by the ac
 the `datadog-ci-version` configuration to specify the version or range.
 
 This action passes the workflow `github.token` to the install step by default. That is primarily useful when `datadog-ci-version` uses a floating release selector such as `v5`, because GitHub release resolution can then be authenticated.
+
+## Maintainer release flow
+
+Run `scripts/create-datadog-ci-bump-pr.sh` locally to check the latest `DataDog/datadog-ci` release and open a PR when the default `datadog-ci-version` should be bumped. The script requires `gh` authentication and a clean working tree.
+
+Merging a PR with the `datadog-ci-version-bump` label creates the next action patch tag, updates the moving major tag, and creates a GitHub Release.
