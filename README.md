@@ -38,6 +38,7 @@ The action has the following options:
 | `github-token`       | GitHub token to use for authenticated datadog-ci release resolution. Defaults to the workflow `github.token` when omitted.                                                                                                                           | False    | `github.token`  |
 | `extra-args`         | Extra args to be passed to the datadog-ci junit upload command.                                                                                                                                                                                        | False    |                 |
 
-By default, this action installs the exact `datadog-ci` release pinned by the action version you use. To receive `datadog-ci` updates, update `datadog/junit-upload-github-action` to a newer release.
+By default, this action installs the exact `datadog-ci` release pinned by the action version you use. To receive `datadog-ci` updates, update `datadog/junit-upload-github-action` to a newer release or use
+the `datadog-ci-version` configuration to specify the version or range.
 
 This action passes the workflow `github.token` to the install step by default. That is primarily useful when `datadog-ci-version` uses a floating release selector such as `v5`, because GitHub release resolution can then be authenticated.
