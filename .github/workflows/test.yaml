@@ -12,7 +12,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Upload reports using a glob pattern
         uses: ./
         with:
@@ -71,7 +71,7 @@ jobs:
   test-older-datadog-ci-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Grab second latest version of @datadog/datadog-ci
         env:
           GH_TOKEN: ${{ github.token }}
@@ -118,7 +118,7 @@ jobs:
   test-should-complain-about-missing-api-key:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Upload reports using a glob pattern
         uses: ./
         id: test_step
