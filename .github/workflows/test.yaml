@@ -21,7 +21,7 @@ jobs:
             echo "Expected datadog-ci-version default to be an exact release tag, got '$default_version'"
             exit 1
           fi
-      - name: Check datadog-ci version bump script
+      - name: Check local release helper scripts
         run: |
           set -euo pipefail
           bash -n scripts/bump-datadog-ci-version.sh
