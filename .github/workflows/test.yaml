@@ -17,6 +17,7 @@ jobs:
         uses: ./
         with:
           api_key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
+          github-token: ${{ github.token }}
           logs: "true"
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
@@ -50,6 +51,7 @@ jobs:
         uses: ./
         with:
           api_key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
+          github-token: ${{ github.token }}
           logs: "true"
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
@@ -71,13 +73,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Grab second latest version of @datadog/datadog-ci
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          SECOND_LATEST_VERSION=$(curl -s "https://api.github.com/repos/datadog/datadog-ci/releases" | jq '[.[] | {tag_name: .tag_name, published_at: .published_at}] | sort_by(.published_at) | reverse | .[:2] | .[1] | .tag_name')
+          set -euo pipefail
+          releases=$(curl --fail-with-body --silent --show-error --location \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            "https://api.github.com/repos/DataDog/datadog-ci/releases")
+          SECOND_LATEST_VERSION=$(printf '%s' "$releases" | jq -er '
+            if type != "array" then
+              error("unexpected GitHub releases response: \(.message // .)")
+            else
+              [ .[] | {tag_name: .tag_name, published_at: .published_at} ]
+              | sort_by(.published_at)
+              | reverse
+              | .[:2]
+              | .[1]
+              | .tag_name
+            end
+          ')
           echo "SECOND_LATEST_VERSION=$SECOND_LATEST_VERSION" >> $GITHUB_ENV
       - name: Upload reports using a glob pattern
         uses: ./
         with:
           api_key: ${{secrets.DD_API_KEY_CI_VISIBILITY}}
+          github-token: ${{ github.token }}
           logs: "true"
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests
@@ -102,6 +123,7 @@ jobs:
         uses: ./
         id: test_step
         with:
+          github-token: ${{ github.token }}
           logs: "true"
           files: '**/fixtures/**'
           service: junit-upload-github-action-tests

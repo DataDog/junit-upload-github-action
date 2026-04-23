@@ -40,6 +40,10 @@ inputs:
     required: false
     description: Version of datadog-ci to install. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin. Legacy npm semver syntax (^, ~, >=, latest) is still supported but deprecated.
     default: "v5"
+  github-token:
+    required: false
+    default: ""
+    description: GitHub token to use for authenticated datadog-ci release resolution. Defaults to the workflow token when omitted.
   extra-args:
     default: ""
     description: Extra args to be passed to the datadog-ci cli.
@@ -60,6 +64,9 @@ runs:
       uses: DataDog/install-datadog-ci-github-action@7960c07e413c56665e12346b34eec80089a7260e # v1.0.2
       with:
         version: ${{ steps.translate-version.outputs.version }}
+        github-token: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
 
     - name: Upload the JUnit files
       shell: bash
