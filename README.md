@@ -45,6 +45,4 @@ This action passes the workflow `github.token` to the install step by default. T
 
 ## Maintainer release flow
 
-Run `scripts/create-datadog-ci-bump-pr.sh` locally to check the latest `DataDog/datadog-ci` release and open a PR when the default `datadog-ci-version` should be bumped. The script requires `gh` authentication and a clean working tree.
-
-Merging a PR with the `datadog-ci-version-bump` label creates the next action patch tag, updates the moving major tag, and creates a GitHub Release.
+See [RELEASE.md](RELEASE.md) for the local `gh`-based process used to bump `datadog-ci` and release this action.
