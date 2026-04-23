@@ -38,8 +38,8 @@ inputs:
     description: Set to "true" to enable forwarding content from XML reports as logs.
   datadog-ci-version:
     required: false
-    description: Version of datadog-ci to install. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin. Legacy npm semver syntax (^, ~, >=, latest) is still supported but deprecated.
-    default: "v5"
+    description: Version of datadog-ci to install. Defaults to the pinned datadog-ci release shipped with this action version. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin. Legacy npm semver syntax (^, ~, >=, latest) is still supported but deprecated.
+    default: "v5.13.1"
   github-token:
     required: false
     default: ""

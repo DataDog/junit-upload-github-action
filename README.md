@@ -34,8 +34,15 @@ The action has the following options:
 | `service`            | Service name to use with the uploaded test results.                                                                                                                                                                                                    | False    |                 |
 | `env`                | Optional environment to add to the tests                                                                                                                                                                                                               | False    |                 |
 | `logs`               | When set to "true" enables forwarding content from the XML reports as Logs. The content inside `<system-out>`, `<system-err>`, and `<failure>` is collected as logs. Logs from elements inside a `<testcase>` are automatically connected to the test. | False    |                 |
-| `datadog-ci-version` | Version of datadog-ci to install. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin. Legacy npm semver syntax (`^`, `~`, `>=`, `latest`) is still supported but deprecated. | False    | `v5`            |
+| `datadog-ci-version` | Version of datadog-ci to install. Defaults to the pinned datadog-ci release shipped with this action version. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin. Legacy npm semver syntax (`^`, `~`, `>=`, `latest`) is still supported but deprecated. | False    | `v5.13.1`       |
 | `github-token`       | GitHub token to use for authenticated datadog-ci release resolution. Defaults to the workflow `github.token` when omitted.                                                                                                                           | False    | `github.token`  |
 | `extra-args`         | Extra args to be passed to the datadog-ci junit upload command.                                                                                                                                                                                        | False    |                 |
 
-This action passes the workflow `github.token` to the install step by default. That is primarily useful when `datadog-ci-version` uses a floating release selector such as `v5`, because GitHub release resolution can then be authenticated. To avoid depending on latest-within-major resolution, pin an exact `datadog-ci` version such as `v5.6.0` or `5.6.0`.
+By default, this action installs the exact `datadog-ci` release pinned by the action version you use. To receive `datadog-ci` updates, update `datadog/junit-upload-github-action` to a newer release or use
+the `datadog-ci-version` configuration to specify the version or range.
+
+This action passes the workflow `github.token` to the install step by default. That is primarily useful when `datadog-ci-version` uses a floating release selector such as `v5`, because GitHub release resolution can then be authenticated.
+
+## Maintainer release flow
+
+See [RELEASE.md](RELEASE.md) for the local `gh`-based process used to bump `datadog-ci` and release this action.
