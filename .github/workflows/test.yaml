@@ -21,6 +21,18 @@ jobs:
             echo "Expected datadog-ci-version default to be an exact release tag, got '$default_version'"
             exit 1
           fi
+      - name: Check datadog-ci version bump script
+        run: |
+          set -euo pipefail
+          tmpdir=$(mktemp -d)
+          cp action.yaml README.md "$tmpdir"/
+          mkdir "$tmpdir/scripts"
+          cp scripts/bump-datadog-ci-version.sh "$tmpdir/scripts"/
+          cd "$tmpdir"
+
+          scripts/bump-datadog-ci-version.sh v5.99.1
+          ruby -ryaml -e 'abort unless YAML.load_file("action.yaml").fetch("inputs").fetch("datadog-ci-version").fetch("default") == "v5.99.1"'
+          grep -q '| `datadog-ci-version` |.*| `v5.99.1`' README.md
 
   test:
     runs-on: ubuntu-latest
