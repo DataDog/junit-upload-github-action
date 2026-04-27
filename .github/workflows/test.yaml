@@ -9,6 +9,35 @@ on:
     - cron: '0 0 * * *' # Runs at midnight UTC every day
 
 jobs:
+  test-default-datadog-ci-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that the default datadog-ci version is pinned
+        run: |
+          set -euo pipefail
+          default_version=$(ruby -ryaml -e 'puts YAML.load_file("action.yaml").fetch("inputs").fetch("datadog-ci-version").fetch("default")')
+          if [[ ! "$default_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected datadog-ci-version default to be an exact release tag, got '$default_version'"
+            exit 1
+          fi
+      - name: Check local release helper scripts
+        run: |
+          set -euo pipefail
+          bash -n scripts/bump-datadog-ci-version.sh
+          bash -n scripts/create-datadog-ci-bump-pr.sh
+          bash -n scripts/release-datadog-ci-bump.sh
+
+          tmpdir=$(mktemp -d)
+          cp action.yaml README.md "$tmpdir"/
+          mkdir "$tmpdir/scripts"
+          cp scripts/bump-datadog-ci-version.sh "$tmpdir/scripts"/
+          cd "$tmpdir"
+
+          scripts/bump-datadog-ci-version.sh v5.99.1
+          ruby -ryaml -e 'abort unless YAML.load_file("action.yaml").fetch("inputs").fetch("datadog-ci-version").fetch("default") == "v5.99.1"'
+          grep -q '| `datadog-ci-version` |.*| `v5.99.1`' README.md
+
   test:
     runs-on: ubuntu-latest
     steps:
