@@ -34,7 +34,7 @@ The script fetches `main` and tags, finds the latest merged PR with the `datadog
 - `datadog-ci` minor bump: action minor bump
 - `datadog-ci` patch bump: action patch bump
 
-The release creates the next immutable action tag, updates the moving major tag, and creates a GitHub Release.
+The release creates the next immutable action tag, updates the moving major tag, and creates a GitHub Release with GitHub-generated release notes starting from the previous immutable action tag.
 
 Preview the release without creating tags or a GitHub Release:
 
