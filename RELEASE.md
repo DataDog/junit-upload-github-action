@@ -1,6 +1,6 @@
 # Release Process
 
-This repository ships a composite GitHub Action. Releases are Git tags: immutable semver tags such as `v3.0.1`, plus a moving major tag such as `v3`.
+This repository ships a composite GitHub Action. Releases are Git tags: immutable semver tags such as `v3.1.0`, plus a moving major tag such as `v3`.
 
 ## Bump datadog-ci
 
@@ -28,7 +28,13 @@ After a `datadog-ci-version-bump` PR is merged, run:
 scripts/release-datadog-ci-bump.sh
 ```
 
-The script fetches `main` and tags, finds the latest merged PR with the `datadog-ci-version-bump` label that is on `main` but not included in the latest immutable action tag, and releases that merge commit. A release creates the next patch tag, updates the moving major tag, and creates a GitHub Release.
+The script fetches `main` and tags, finds the latest merged PR with the `datadog-ci-version-bump` label that is on `main` but not included in the latest immutable action tag, and releases that merge commit. The action version follows the `datadog-ci` change:
+
+- floating `v5` to the first pinned `v5.x.y`: action minor bump
+- `datadog-ci` minor bump: action minor bump
+- `datadog-ci` patch bump: action patch bump
+
+The release creates the next immutable action tag, updates the moving major tag, and creates a GitHub Release.
 
 Preview the release without creating tags or a GitHub Release:
 
