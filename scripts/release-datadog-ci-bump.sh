@@ -252,17 +252,6 @@ if gh release view "$next_tag" --repo "$repo" >/dev/null 2>&1; then
   exit 1
 fi
 
-notes_file=$(mktemp)
-trap 'rm -f "$notes_file"' EXIT
-cat > "$notes_file" <<EOF
-Updates the default \`datadog-ci-version\` from \`$latest_datadog_ci_version\` to \`$release_datadog_ci_version\`.
-
-Triggered by $release_source
-EOF
-if [[ -n "$release_pr_merged_at" ]]; then
-  echo "Merged at: $release_pr_merged_at" >> "$notes_file"
-fi
-
 echo "Latest action release tag: $latest_tag"
 echo "Next action release tag: $next_tag"
 echo "Action bump kind: $action_bump_kind"
@@ -286,6 +275,7 @@ git push --force "$remote" "refs/tags/$major_tag"
 
 gh release create "$next_tag" \
   --repo "$repo" \
-  --target "$release_sha" \
   --title "$next_tag" \
-  --notes-file "$notes_file"
+  --verify-tag \
+  --generate-notes \
+  --notes-start-tag "$latest_tag"
