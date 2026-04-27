@@ -16,16 +16,6 @@ Options:
   --dry-run       Print the release that would be created.
   --allow-version-mismatch
                   Allow --tag to be lower than the release labels imply.
-
-Environment:
-  BASE_BRANCH   Branch to inspect. Defaults to main.
-  REMOTE        Git remote to fetch and push. Defaults to origin.
-  REPO          GitHub repo for gh commands. Defaults to gh repo view's repo.
-  PR_LIMIT      Number of merged PRs to inspect. Defaults to 200.
-  SEMVER_MINOR_LABEL
-                Label that requests a minor action release. Defaults to semver-minor.
-  SEMVER_PATCH_LABEL
-                Label that requests a patch action release. Defaults to semver-patch.
 EOF
 }
 
@@ -94,12 +84,12 @@ fi
 
 gh auth status >/dev/null
 
-base_branch="${BASE_BRANCH:-main}"
-remote="${REMOTE:-origin}"
-repo="${REPO:-$(gh repo view --json nameWithOwner --jq '.nameWithOwner')}"
-pr_limit="${PR_LIMIT:-200}"
-minor_label="${SEMVER_MINOR_LABEL:-semver-minor}"
-patch_label="${SEMVER_PATCH_LABEL:-semver-patch}"
+base_branch="main"
+remote="origin"
+repo="DataDog/junit-upload-github-action"
+pr_limit=200
+minor_label="semver-minor"
+patch_label="semver-patch"
 
 git fetch --tags "$remote"
 git fetch "$remote" "$base_branch"

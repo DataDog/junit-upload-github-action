@@ -10,17 +10,6 @@ the default datadog-ci-version when the release is newer than the current defaul
 
 Arguments:
   vX.Y.Z   Optional exact datadog-ci release tag to use instead of releases/latest.
-
-Environment:
-  BASE_BRANCH   Base branch for the PR. Defaults to main.
-  BRANCH_NAME   Branch to create. Defaults to datadog-ci-bump/<version>.
-  BUMP_LABEL    Label applied to the PR. Defaults to datadog-ci-version-bump.
-  REMOTE        Git remote to push to. Defaults to origin.
-  REPO          GitHub repo for gh commands. Defaults to gh repo view's repo.
-  SEMVER_MINOR_LABEL
-                Label applied for minor action releases. Defaults to semver-minor.
-  SEMVER_PATCH_LABEL
-                Label applied for patch action releases. Defaults to semver-patch.
 EOF
 }
 
@@ -48,13 +37,13 @@ fi
 
 gh auth status >/dev/null
 
-base_branch="${BASE_BRANCH:-main}"
-bump_label="${BUMP_LABEL:-datadog-ci-version-bump}"
-remote="${REMOTE:-origin}"
-repo="${REPO:-$(gh repo view --json nameWithOwner --jq '.nameWithOwner')}"
+base_branch="main"
+bump_label="datadog-ci-version-bump"
+remote="origin"
+repo="DataDog/junit-upload-github-action"
 requested_version="${1:-}"
-semver_minor_label="${SEMVER_MINOR_LABEL:-semver-minor}"
-semver_patch_label="${SEMVER_PATCH_LABEL:-semver-patch}"
+semver_minor_label="semver-minor"
+semver_patch_label="semver-patch"
 
 current_version=$(ruby -ryaml -e 'puts YAML.load_file("action.yaml").fetch("inputs").fetch("datadog-ci-version").fetch("default")')
 if [[ -n "$requested_version" ]]; then
@@ -114,7 +103,7 @@ else
   release_label="$semver_patch_label"
 fi
 
-branch_name="${BRANCH_NAME:-datadog-ci-bump/${latest_version#v}}"
+branch_name="datadog-ci-bump/${latest_version#v}"
 
 existing_pr_url=$(gh pr list \
   --repo "$repo" \
@@ -128,7 +117,7 @@ if [[ -n "$existing_pr_url" ]]; then
 fi
 
 if git show-ref --verify --quiet "refs/heads/$branch_name"; then
-  echo "Local branch '$branch_name' already exists. Delete it or set BRANCH_NAME to another value." >&2
+  echo "Local branch '$branch_name' already exists. Delete it before rerunning the script." >&2
   exit 1
 fi
 
