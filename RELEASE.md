@@ -2,49 +2,91 @@
 
 This repository ships a composite GitHub Action. Releases are Git tags: immutable semver tags such as `v3.1.0`, plus a moving major tag such as `v3`.
 
+## Requirements
+
+The release scripts require the [GitHub CLI](https://cli.github.com/manual/) and an authenticated session:
+
+```bash
+gh auth login
+gh auth status
+```
+
+Run release scripts from a clean working tree.
+
+## Release labels
+
+Every PR must have one of these labels:
+
+- `semver-patch`: requests the next patch release
+- `semver-minor`: requests the next minor release
+
+If a release includes multiple merged PRs, `semver-minor` wins over `semver-patch`. Major releases are explicit: pass `--tag vX.0.0` to the release script.
+
 ## Bump datadog-ci
 
-Run the bump helper from a clean working tree:
+This repository provides a helper for the common case of bumping the default `datadog-ci-version`. It is not required for every `junit-upload-github-action` release; any merged PR with a `semver-patch` or `semver-minor` label can be released with `scripts/release-action.sh`.
+
+To create a `datadog-ci-version` bump PR, run the helper from a clean working tree:
 
 ```bash
 scripts/create-datadog-ci-bump-pr.sh
 ```
 
-The script uses `gh` to check the latest `DataDog/datadog-ci` release. If that release is newer than the default in `action.yaml`, it creates a branch, updates `action.yaml` and `README.md`, pushes the branch, creates the `datadog-ci-version-bump` label if needed, and opens a PR with that label.
+The script uses `gh` to check the latest `DataDog/datadog-ci` release. If that release is newer than the default in `action.yaml`, it creates a branch, updates `action.yaml` and `README.md`, pushes the branch, creates labels if needed, and opens a PR.
+
+Preview the bump PR without creating a branch, commit, labels, push, or PR:
+
+```bash
+scripts/create-datadog-ci-bump-pr.sh --dry-run
+```
+
+The PR gets:
+
+- `datadog-ci-version-bump`
+- `semver-patch` when `datadog-ci` only changed by patch
+- `semver-minor` when `datadog-ci` changed by minor, or when moving from a floating default to the first pinned version
 
 To test a specific version instead of the latest release:
 
 ```bash
 scripts/create-datadog-ci-bump-pr.sh v5.14.0
+scripts/create-datadog-ci-bump-pr.sh v5.14.0 --dry-run
 ```
 
 Review and merge the PR normally.
 
 ## Release the action
 
-After a `datadog-ci-version-bump` PR is merged, run:
+Preview the release first:
 
 ```bash
-scripts/release-datadog-ci-bump.sh
+scripts/release-action.sh --dry-run
 ```
 
-The script fetches `main` and tags, finds the latest merged PR with the `datadog-ci-version-bump` label that is on `main` but not included in the latest immutable action tag, and releases that merge commit. The action version follows the `datadog-ci` change:
+The script fetches `main` and tags, finds merged PRs since the latest immutable action tag, reads their `semver-patch` and `semver-minor` labels, and chooses the next action tag. It releases `origin/main` by default, updates the moving major tag, and creates a GitHub Release with GitHub-generated release notes.
 
-- floating `v5` to the first pinned `v5.x.y`: action minor bump
-- `datadog-ci` minor bump: action minor bump
-- `datadog-ci` patch bump: action patch bump
-
-The release creates the next immutable action tag, updates the moving major tag, and creates a GitHub Release with GitHub-generated release notes starting from the previous immutable action tag.
-
-Preview the release without creating tags or a GitHub Release:
+If the dry run looks right, publish the release:
 
 ```bash
-scripts/release-datadog-ci-bump.sh --dry-run
+scripts/release-action.sh
 ```
 
-If multiple bump PRs were merged without releases, the script warns and releases only the latest one. To intentionally release an older merge commit separately, stop and pass a specific PR number or commit SHA before releasing the latest one:
+To release a specific commit on `main`:
 
 ```bash
-scripts/release-datadog-ci-bump.sh --pr 123
-scripts/release-datadog-ci-bump.sh --sha abc1234
+scripts/release-action.sh --sha abc1234 --dry-run
+scripts/release-action.sh --sha abc1234
+```
+
+To choose the tag manually:
+
+```bash
+scripts/release-action.sh --tag v3.2.1 --dry-run
+scripts/release-action.sh --tag v3.2.1
+```
+
+If the requested tag is lower than the merged PR labels imply, for example a patch tag while an unreleased PR has `semver-minor`, the script fails. To publish that tag intentionally:
+
+```bash
+scripts/release-action.sh --tag v3.2.1 --allow-version-mismatch
 ```

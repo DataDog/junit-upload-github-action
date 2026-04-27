@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/create-datadog-ci-bump-pr.sh [vX.Y.Z]
+Usage: scripts/create-datadog-ci-bump-pr.sh [vX.Y.Z] [--dry-run]
 
 Checks the latest DataDog/datadog-ci release with gh, then opens a PR that bumps
 the default datadog-ci-version when the release is newer than the current default.
@@ -11,24 +11,37 @@ the default datadog-ci-version when the release is newer than the current defaul
 Arguments:
   vX.Y.Z   Optional exact datadog-ci release tag to use instead of releases/latest.
 
-Environment:
-  BASE_BRANCH   Base branch for the PR. Defaults to main.
-  BRANCH_NAME   Branch to create. Defaults to datadog-ci-bump/<version>.
-  BUMP_LABEL    Label applied to the PR. Defaults to datadog-ci-version-bump.
-  REMOTE        Git remote to push to. Defaults to origin.
-  REPO          GitHub repo for gh commands. Defaults to gh repo view's repo.
+Options:
+  --dry-run   Print the bump PR that would be created.
 EOF
 }
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage
-  exit 0
-fi
-
-if [[ $# -gt 1 ]]; then
-  usage >&2
-  exit 1
-fi
+dry_run=false
+requested_version=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --dry-run)
+      dry_run=true
+      shift
+      ;;
+    v[0-9]*.[0-9]*.[0-9]*)
+      if [[ -n "$requested_version" ]]; then
+        usage >&2
+        exit 1
+      fi
+      requested_version="$1"
+      shift
+      ;;
+    *)
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
 
 for command in gh git ruby; do
   if ! command -v "$command" >/dev/null 2>&1; then
@@ -37,18 +50,14 @@ for command in gh git ruby; do
   fi
 done
 
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Working tree must be clean before creating a bump PR." >&2
-  exit 1
-fi
-
 gh auth status >/dev/null
 
-base_branch="${BASE_BRANCH:-main}"
-bump_label="${BUMP_LABEL:-datadog-ci-version-bump}"
-remote="${REMOTE:-origin}"
-repo="${REPO:-$(gh repo view --json nameWithOwner --jq '.nameWithOwner')}"
-requested_version="${1:-}"
+base_branch="main"
+bump_label="datadog-ci-version-bump"
+remote="origin"
+repo="DataDog/junit-upload-github-action"
+semver_minor_label="semver-minor"
+semver_patch_label="semver-patch"
 
 current_version=$(ruby -ryaml -e 'puts YAML.load_file("action.yaml").fetch("inputs").fetch("datadog-ci-version").fetch("default")')
 if [[ -n "$requested_version" ]]; then
@@ -62,27 +71,69 @@ if [[ ! "$latest_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
-version_gt() {
-  local left="${1#v}"
-  local right="${2#v}"
-  local left_major left_minor left_patch right_major right_minor right_patch
-
-  IFS=. read -r left_major left_minor left_patch <<< "$left"
-  IFS=. read -r right_major right_minor right_patch <<< "$right"
-
-  (( left_major > right_major )) && return 0
-  (( left_major < right_major )) && return 1
-  (( left_minor > right_minor )) && return 0
-  (( left_minor < right_minor )) && return 1
-  (( left_patch > right_patch ))
+is_exact_version() {
+  [[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
 }
 
-if ! version_gt "$latest_version" "$current_version"; then
+semver_parts() {
+  local version="${1#v}"
+  IFS=. read -r semver_major semver_minor semver_patch <<< "$version"
+  echo "$semver_major $semver_minor $semver_patch"
+}
+
+bump_kind_for_datadog_ci_change() {
+  local current="$1"
+  local next="$2"
+
+  if ! is_exact_version "$current"; then
+    echo "minor"
+    return 0
+  fi
+
+  local current_major current_minor current_patch next_major next_minor next_patch
+  read -r current_major current_minor current_patch <<< "$(semver_parts "$current")"
+  read -r next_major next_minor next_patch <<< "$(semver_parts "$next")"
+
+  if (( next_major == current_major && next_minor == current_minor && next_patch > current_patch )); then
+    echo "patch"
+    return 0
+  fi
+
+  if (( next_major > current_major || (next_major == current_major && next_minor > current_minor) )); then
+    echo "minor"
+    return 0
+  fi
+
+  return 1
+}
+
+if ! release_bump_kind=$(bump_kind_for_datadog_ci_change "$current_version" "$latest_version"); then
   echo "No datadog-ci bump needed. Current default is $current_version; latest is $latest_version."
   exit 0
 fi
+if [[ "$release_bump_kind" == "minor" ]]; then
+  release_label="$semver_minor_label"
+else
+  release_label="$semver_patch_label"
+fi
 
-branch_name="${BRANCH_NAME:-datadog-ci-bump/${latest_version#v}}"
+branch_name="datadog-ci-bump/${latest_version#v}"
+
+if [[ "$dry_run" == "true" ]]; then
+  echo "Current datadog-ci version: $current_version"
+  echo "Target datadog-ci version: $latest_version"
+  echo "Release bump kind: $release_bump_kind"
+  echo "Branch to create: $branch_name"
+  echo "Files to update: action.yaml README.md"
+  echo "Labels to apply: $bump_label $release_label"
+  echo "Dry run only. No branch, commit, labels, push, or PR were created."
+  exit 0
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Working tree must be clean before creating a bump PR." >&2
+  exit 1
+fi
 
 existing_pr_url=$(gh pr list \
   --repo "$repo" \
@@ -96,7 +147,7 @@ if [[ -n "$existing_pr_url" ]]; then
 fi
 
 if git show-ref --verify --quiet "refs/heads/$branch_name"; then
-  echo "Local branch '$branch_name' already exists. Delete it or set BRANCH_NAME to another value." >&2
+  echo "Local branch '$branch_name' already exists. Delete it before rerunning the script." >&2
   exit 1
 fi
 
@@ -111,8 +162,14 @@ git push -u "$remote" "$branch_name"
 
 gh label create "$bump_label" \
   --repo "$repo" \
-  --description "Triggers a junit-upload-github-action release after merge" \
+  --description "Marks PRs that bump the default datadog-ci version" \
   --color "1D76DB" \
+  --force
+
+gh label create "$release_label" \
+  --repo "$repo" \
+  --description "Requests a $release_bump_kind junit-upload-github-action release after merge" \
+  --color "0E8A16" \
   --force
 
 body_file=$(mktemp)
@@ -124,7 +181,7 @@ Bumps the default \`datadog-ci-version\` from \`$current_version\` to \`$latest_
 
 ## Release behavior
 
-Merging this PR with the \`$bump_label\` label will trigger the release workflow. That workflow creates the next immutable action tag, moves the major action tag, and creates a GitHub Release.
+This PR is labeled \`$release_label\`, so the release helper will create a $release_bump_kind action release after merge.
 EOF
 
 gh pr create \
@@ -133,4 +190,5 @@ gh pr create \
   --head "$branch_name" \
   --title "Bump datadog-ci to $latest_version" \
   --body-file "$body_file" \
-  --label "$bump_label"
+  --label "$bump_label" \
+  --label "$release_label"

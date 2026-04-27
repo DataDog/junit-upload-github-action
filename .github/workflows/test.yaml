@@ -13,6 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check PR has a semver release label
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          labels=$(ruby -rjson -e 'puts JSON.parse(File.read(ENV.fetch("GITHUB_EVENT_PATH"))).fetch("pull_request").fetch("labels").map { |label| label.fetch("name") }')
+          if ! grep -qx 'semver-patch' <<< "$labels" && ! grep -qx 'semver-minor' <<< "$labels"; then
+            echo "Expected pull request to have either the semver-patch or semver-minor label."
+            exit 1
+          fi
       - name: Check that the default datadog-ci version is pinned
         run: |
           set -euo pipefail
@@ -26,7 +35,7 @@ jobs:
           set -euo pipefail
           bash -n scripts/bump-datadog-ci-version.sh
           bash -n scripts/create-datadog-ci-bump-pr.sh
-          bash -n scripts/release-datadog-ci-bump.sh
+          bash -n scripts/release-action.sh
 
           tmpdir=$(mktemp -d)
           cp action.yaml README.md "$tmpdir"/
