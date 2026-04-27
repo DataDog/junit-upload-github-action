@@ -3,25 +3,45 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/create-datadog-ci-bump-pr.sh [vX.Y.Z]
+Usage: scripts/create-datadog-ci-bump-pr.sh [vX.Y.Z] [--dry-run]
 
 Checks the latest DataDog/datadog-ci release with gh, then opens a PR that bumps
 the default datadog-ci-version when the release is newer than the current default.
 
 Arguments:
   vX.Y.Z   Optional exact datadog-ci release tag to use instead of releases/latest.
+
+Options:
+  --dry-run   Print the bump PR that would be created.
 EOF
 }
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage
-  exit 0
-fi
-
-if [[ $# -gt 1 ]]; then
-  usage >&2
-  exit 1
-fi
+dry_run=false
+requested_version=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --dry-run)
+      dry_run=true
+      shift
+      ;;
+    v[0-9]*.[0-9]*.[0-9]*)
+      if [[ -n "$requested_version" ]]; then
+        usage >&2
+        exit 1
+      fi
+      requested_version="$1"
+      shift
+      ;;
+    *)
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
 
 for command in gh git ruby; do
   if ! command -v "$command" >/dev/null 2>&1; then
@@ -30,18 +50,12 @@ for command in gh git ruby; do
   fi
 done
 
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Working tree must be clean before creating a bump PR." >&2
-  exit 1
-fi
-
 gh auth status >/dev/null
 
 base_branch="main"
 bump_label="datadog-ci-version-bump"
 remote="origin"
 repo="DataDog/junit-upload-github-action"
-requested_version="${1:-}"
 semver_minor_label="semver-minor"
 semver_patch_label="semver-patch"
 
@@ -104,6 +118,22 @@ else
 fi
 
 branch_name="datadog-ci-bump/${latest_version#v}"
+
+if [[ "$dry_run" == "true" ]]; then
+  echo "Current datadog-ci version: $current_version"
+  echo "Target datadog-ci version: $latest_version"
+  echo "Release bump kind: $release_bump_kind"
+  echo "Branch to create: $branch_name"
+  echo "Files to update: action.yaml README.md"
+  echo "Labels to apply: $bump_label $release_label"
+  echo "Dry run only. No branch, commit, labels, push, or PR were created."
+  exit 0
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Working tree must be clean before creating a bump PR." >&2
+  exit 1
+fi
 
 existing_pr_url=$(gh pr list \
   --repo "$repo" \

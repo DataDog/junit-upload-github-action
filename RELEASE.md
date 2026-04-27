@@ -34,6 +34,12 @@ scripts/create-datadog-ci-bump-pr.sh
 
 The script uses `gh` to check the latest `DataDog/datadog-ci` release. If that release is newer than the default in `action.yaml`, it creates a branch, updates `action.yaml` and `README.md`, pushes the branch, creates labels if needed, and opens a PR.
 
+Preview the bump PR without creating a branch, commit, labels, push, or PR:
+
+```bash
+scripts/create-datadog-ci-bump-pr.sh --dry-run
+```
+
 The PR gets:
 
 - `datadog-ci-version-bump`
@@ -44,6 +50,7 @@ To test a specific version instead of the latest release:
 
 ```bash
 scripts/create-datadog-ci-bump-pr.sh v5.14.0
+scripts/create-datadog-ci-bump-pr.sh v5.14.0 --dry-run
 ```
 
 Review and merge the PR normally.
