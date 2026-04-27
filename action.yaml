@@ -39,7 +39,7 @@ inputs:
   datadog-ci-version:
     required: false
     description: Version of datadog-ci to install. Defaults to the pinned datadog-ci release shipped with this action version. Use a major version like `v5` to get the latest release within that major version, or a specific tag like `v5.6.0` to pin. Legacy npm semver syntax (^, ~, >=, latest) is still supported but deprecated.
-    default: "v5.13.1"
+    default: "v5.14.0"
   github-token:
     required: false
     default: ""

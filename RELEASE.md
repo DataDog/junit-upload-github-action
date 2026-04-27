@@ -15,7 +15,7 @@ The script uses `gh` to check the latest `DataDog/datadog-ci` release. If that r
 To test a specific version instead of the latest release:
 
 ```bash
-scripts/create-datadog-ci-bump-pr.sh v5.13.1
+scripts/create-datadog-ci-bump-pr.sh v5.14.0
 ```
 
 Review and merge the PR normally.
