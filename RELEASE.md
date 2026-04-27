@@ -48,3 +48,24 @@ If multiple bump PRs were merged without releases, the script warns and releases
 scripts/release-datadog-ci-bump.sh --pr 123
 scripts/release-datadog-ci-bump.sh --sha abc1234
 ```
+
+## Release other action changes
+
+For action releases that are not driven by `datadog-ci-version`, use the generic release helper:
+
+```bash
+scripts/release-action.sh --tag v3.2.0
+```
+
+That script:
+
+- releases `origin/main` by default, or a specific commit if `--sha` is provided
+- creates the immutable action tag you pass in `--tag`
+- updates the matching moving major tag
+- creates a GitHub Release with GitHub-generated release notes starting from the previous immutable action tag
+
+Preview the release without creating tags or a GitHub Release:
+
+```bash
+scripts/release-action.sh --tag v3.2.0 --dry-run
+```

@@ -27,6 +27,7 @@ jobs:
           bash -n scripts/bump-datadog-ci-version.sh
           bash -n scripts/create-datadog-ci-bump-pr.sh
           bash -n scripts/release-datadog-ci-bump.sh
+          bash -n scripts/release-action.sh
 
           tmpdir=$(mktemp -d)
           cp action.yaml README.md "$tmpdir"/
