@@ -24,7 +24,9 @@ If a release includes multiple merged PRs, `semver-minor` wins over `semver-patc
 
 ## Bump datadog-ci
 
-Run the bump helper from a clean working tree:
+This repository provides a helper for the common case of bumping the default `datadog-ci-version`. It is not required for every `junit-upload-github-action` release; any merged PR with a `semver-patch` or `semver-minor` label can be released with `scripts/release-action.sh`.
+
+To create a `datadog-ci-version` bump PR, run the helper from a clean working tree:
 
 ```bash
 scripts/create-datadog-ci-bump-pr.sh
