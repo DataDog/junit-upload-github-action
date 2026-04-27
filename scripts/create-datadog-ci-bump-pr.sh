@@ -17,6 +17,10 @@ Environment:
   BUMP_LABEL    Label applied to the PR. Defaults to datadog-ci-version-bump.
   REMOTE        Git remote to push to. Defaults to origin.
   REPO          GitHub repo for gh commands. Defaults to gh repo view's repo.
+  SEMVER_MINOR_LABEL
+                Label applied for minor action releases. Defaults to semver-minor.
+  SEMVER_PATCH_LABEL
+                Label applied for patch action releases. Defaults to semver-patch.
 EOF
 }
 
@@ -49,6 +53,8 @@ bump_label="${BUMP_LABEL:-datadog-ci-version-bump}"
 remote="${REMOTE:-origin}"
 repo="${REPO:-$(gh repo view --json nameWithOwner --jq '.nameWithOwner')}"
 requested_version="${1:-}"
+semver_minor_label="${SEMVER_MINOR_LABEL:-semver-minor}"
+semver_patch_label="${SEMVER_PATCH_LABEL:-semver-patch}"
 
 current_version=$(ruby -ryaml -e 'puts YAML.load_file("action.yaml").fetch("inputs").fetch("datadog-ci-version").fetch("default")')
 if [[ -n "$requested_version" ]]; then
@@ -62,24 +68,50 @@ if [[ ! "$latest_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
-version_gt() {
-  local left="${1#v}"
-  local right="${2#v}"
-  local left_major left_minor left_patch right_major right_minor right_patch
-
-  IFS=. read -r left_major left_minor left_patch <<< "$left"
-  IFS=. read -r right_major right_minor right_patch <<< "$right"
-
-  (( left_major > right_major )) && return 0
-  (( left_major < right_major )) && return 1
-  (( left_minor > right_minor )) && return 0
-  (( left_minor < right_minor )) && return 1
-  (( left_patch > right_patch ))
+is_exact_version() {
+  [[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
 }
 
-if ! version_gt "$latest_version" "$current_version"; then
+semver_parts() {
+  local version="${1#v}"
+  IFS=. read -r semver_major semver_minor semver_patch <<< "$version"
+  echo "$semver_major $semver_minor $semver_patch"
+}
+
+bump_kind_for_datadog_ci_change() {
+  local current="$1"
+  local next="$2"
+
+  if ! is_exact_version "$current"; then
+    echo "minor"
+    return 0
+  fi
+
+  local current_major current_minor current_patch next_major next_minor next_patch
+  read -r current_major current_minor current_patch <<< "$(semver_parts "$current")"
+  read -r next_major next_minor next_patch <<< "$(semver_parts "$next")"
+
+  if (( next_major == current_major && next_minor == current_minor && next_patch > current_patch )); then
+    echo "patch"
+    return 0
+  fi
+
+  if (( next_major > current_major || (next_major == current_major && next_minor > current_minor) )); then
+    echo "minor"
+    return 0
+  fi
+
+  return 1
+}
+
+if ! release_bump_kind=$(bump_kind_for_datadog_ci_change "$current_version" "$latest_version"); then
   echo "No datadog-ci bump needed. Current default is $current_version; latest is $latest_version."
   exit 0
+fi
+if [[ "$release_bump_kind" == "minor" ]]; then
+  release_label="$semver_minor_label"
+else
+  release_label="$semver_patch_label"
 fi
 
 branch_name="${BRANCH_NAME:-datadog-ci-bump/${latest_version#v}}"
@@ -111,8 +143,14 @@ git push -u "$remote" "$branch_name"
 
 gh label create "$bump_label" \
   --repo "$repo" \
-  --description "Triggers a junit-upload-github-action release after merge" \
+  --description "Marks PRs that bump the default datadog-ci version" \
   --color "1D76DB" \
+  --force
+
+gh label create "$release_label" \
+  --repo "$repo" \
+  --description "Requests a $release_bump_kind junit-upload-github-action release after merge" \
+  --color "0E8A16" \
   --force
 
 body_file=$(mktemp)
@@ -124,7 +162,7 @@ Bumps the default \`datadog-ci-version\` from \`$current_version\` to \`$latest_
 
 ## Release behavior
 
-Merging this PR with the \`$bump_label\` label will trigger the release workflow. That workflow creates the next immutable action tag, moves the major action tag, and creates a GitHub Release.
+This PR is labeled \`$release_label\`, so the release helper will create a $release_bump_kind action release after merge.
 EOF
 
 gh pr create \
@@ -133,4 +171,5 @@ gh pr create \
   --head "$branch_name" \
   --title "Bump datadog-ci to $latest_version" \
   --body-file "$body_file" \
-  --label "$bump_label"
+  --label "$bump_label" \
+  --label "$release_label"

@@ -3,27 +3,36 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/release-action.sh --tag vX.Y.Z [--sha COMMIT] [--dry-run]
+Usage: scripts/release-action.sh [--tag vX.Y.Z] [--sha COMMIT] [--dry-run] [--allow-version-mismatch]
 
-Creates a generic action release from a commit on main. The script creates the
-immutable release tag, updates the moving major tag, and creates a GitHub Release
-using GitHub-generated release notes starting from the previous immutable tag.
+Creates an action release from a commit on main. By default, the script derives
+the next immutable action tag from merged PR labels since the previous immutable
+tag. It then updates the moving major tag and creates a GitHub Release using
+GitHub-generated release notes.
 
 Options:
-  --tag TAG       Required immutable action tag to create, e.g. v3.2.0
+  --tag TAG       Immutable action tag to create, e.g. v3.2.0. Optional.
   --sha COMMIT    Commit to release. Defaults to origin/main after fetch.
   --dry-run       Print the release that would be created.
+  --allow-version-mismatch
+                  Allow --tag to be lower than the release labels imply.
 
 Environment:
   BASE_BRANCH   Branch to inspect. Defaults to main.
   REMOTE        Git remote to fetch and push. Defaults to origin.
   REPO          GitHub repo for gh commands. Defaults to gh repo view's repo.
+  PR_LIMIT      Number of merged PRs to inspect. Defaults to 200.
+  SEMVER_MINOR_LABEL
+                Label that requests a minor action release. Defaults to semver-minor.
+  SEMVER_PATCH_LABEL
+                Label that requests a patch action release. Defaults to semver-patch.
 EOF
 }
 
 dry_run=false
 requested_tag=""
 requested_sha=""
+allow_version_mismatch=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -50,6 +59,10 @@ while [[ $# -gt 0 ]]; do
       dry_run=true
       shift
       ;;
+    --allow-version-mismatch)
+      allow_version_mismatch=true
+      shift
+      ;;
     *)
       usage >&2
       exit 1
@@ -57,14 +70,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$requested_tag" ]]; then
-  echo "--tag is required" >&2
-  usage >&2
+if [[ -n "$requested_tag" && ! "$requested_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Expected --tag to be an immutable action tag like v3.2.0, got '$requested_tag'" >&2
   exit 1
 fi
 
-if [[ ! "$requested_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Expected --tag to be an immutable action tag like v3.2.0, got '$requested_tag'" >&2
+if [[ "$allow_version_mismatch" == "true" && -z "$requested_tag" ]]; then
+  echo "--allow-version-mismatch only applies when --tag is set." >&2
   exit 1
 fi
 
@@ -85,6 +97,9 @@ gh auth status >/dev/null
 base_branch="${BASE_BRANCH:-main}"
 remote="${REMOTE:-origin}"
 repo="${REPO:-$(gh repo view --json nameWithOwner --jq '.nameWithOwner')}"
+pr_limit="${PR_LIMIT:-200}"
+minor_label="${SEMVER_MINOR_LABEL:-semver-minor}"
+patch_label="${SEMVER_PATCH_LABEL:-semver-patch}"
 
 git fetch --tags "$remote"
 git fetch "$remote" "$base_branch"
@@ -130,30 +145,157 @@ semver_parts() {
   echo "$semver_major $semver_minor $semver_patch"
 }
 
-read -r latest_major latest_minor latest_patch <<< "$(semver_parts "$latest_tag")"
-read -r requested_major requested_minor requested_patch <<< "$(semver_parts "$requested_tag")"
+bump_rank() {
+  case "$1" in
+    patch) echo 1 ;;
+    minor) echo 2 ;;
+    major) echo 3 ;;
+    *)
+      echo "Unknown bump kind '$1'" >&2
+      return 1
+      ;;
+  esac
+}
 
-if (( requested_major < latest_major )) || \
-   (( requested_major == latest_major && requested_minor < latest_minor )) || \
-   (( requested_major == latest_major && requested_minor == latest_minor && requested_patch <= latest_patch )); then
-  echo "Requested tag '$requested_tag' must be newer than latest immutable action release '$latest_tag'." >&2
+tag_bump_kind() {
+  local previous="$1"
+  local next="$2"
+  local previous_major previous_minor previous_patch next_major next_minor next_patch
+
+  read -r previous_major previous_minor previous_patch <<< "$(semver_parts "$previous")"
+  read -r next_major next_minor next_patch <<< "$(semver_parts "$next")"
+
+  if (( next_major > previous_major )); then
+    echo "major"
+  elif (( next_major == previous_major && next_minor > previous_minor )); then
+    echo "minor"
+  elif (( next_major == previous_major && next_minor == previous_minor && next_patch > previous_patch )); then
+    echo "patch"
+  else
+    return 1
+  fi
+}
+
+next_tag_for_bump_kind() {
+  local bump_kind="$1"
+  local latest_major latest_minor latest_patch
+
+  read -r latest_major latest_minor latest_patch <<< "$(semver_parts "$latest_tag")"
+
+  case "$bump_kind" in
+    minor)
+      echo "v${latest_major}.$((latest_minor + 1)).0"
+      ;;
+    patch)
+      echo "v${latest_major}.${latest_minor}.$((latest_patch + 1))"
+      ;;
+    *)
+      echo "Automatic releases support '$minor_label' and '$patch_label'. Use --tag for other release types." >&2
+      return 1
+      ;;
+  esac
+}
+
+release_bump_kind=""
+release_pr_numbers=()
+
+while IFS=$'\t' read -r pr_number merge_sha labels_csv; do
+  [[ -z "$pr_number" ]] && continue
+  [[ -z "$merge_sha" ]] && continue
+
+  if ! git cat-file -e "${merge_sha}^{commit}" 2>/dev/null; then
+    continue
+  fi
+
+  if ! git merge-base --is-ancestor "$merge_sha" "$target_sha"; then
+    continue
+  fi
+
+  if git merge-base --is-ancestor "$merge_sha" "$latest_tag"; then
+    continue
+  fi
+
+  pr_bump_kind=""
+  IFS=, read -ra labels <<< "$labels_csv"
+  for label in "${labels[@]}"; do
+    case "$label" in
+      "$minor_label")
+        pr_bump_kind="minor"
+        ;;
+      "$patch_label")
+        if [[ -z "$pr_bump_kind" ]]; then
+          pr_bump_kind="patch"
+        fi
+        ;;
+    esac
+  done
+
+  if [[ -z "$pr_bump_kind" ]]; then
+    continue
+  fi
+
+  release_pr_numbers+=("#$pr_number")
+  if [[ -z "$release_bump_kind" || "$(bump_rank "$pr_bump_kind")" -gt "$(bump_rank "$release_bump_kind")" ]]; then
+    release_bump_kind="$pr_bump_kind"
+  fi
+done < <(
+  gh pr list \
+    --repo "$repo" \
+    --state merged \
+    --base "$base_branch" \
+    --limit "$pr_limit" \
+    --json number,mergedAt,mergeCommit,labels \
+    --jq 'sort_by(.mergedAt) | .[] | [.number, (.mergeCommit.oid // ""), ([.labels[].name] | join(","))] | @tsv'
+)
+
+if [[ -z "$release_bump_kind" && -z "$requested_tag" ]]; then
+  echo "No unreleased merged PRs with '$minor_label' or '$patch_label' found between $latest_tag and $target_sha."
+  exit 0
+fi
+
+if [[ -z "$requested_tag" ]]; then
+  next_tag=$(next_tag_for_bump_kind "$release_bump_kind")
+else
+  if ! requested_bump_kind=$(tag_bump_kind "$latest_tag" "$requested_tag"); then
+    echo "Requested tag '$requested_tag' must be newer than latest immutable action release '$latest_tag'." >&2
+    exit 1
+  fi
+
+  if [[ -n "$release_bump_kind" && "$(bump_rank "$requested_bump_kind")" -lt "$(bump_rank "$release_bump_kind")" ]]; then
+    mismatch_message="Requested tag '$requested_tag' is a $requested_bump_kind release, but merged PR labels require a $release_bump_kind release."
+    if [[ "$allow_version_mismatch" != "true" ]]; then
+      echo "$mismatch_message" >&2
+      echo "Rerun with --allow-version-mismatch to publish this tag anyway." >&2
+      exit 1
+    fi
+    echo "Warning: $mismatch_message" >&2
+  fi
+
+  next_tag="$requested_tag"
+fi
+
+read -r next_major _next_minor _next_patch <<< "$(semver_parts "$next_tag")"
+major_tag="v${next_major}"
+
+if git rev-parse --verify --quiet "refs/tags/$next_tag" >/dev/null; then
+  echo "Tag '$next_tag' already exists locally." >&2
   exit 1
 fi
 
-major_tag="v${requested_major}"
-
-if git rev-parse --verify --quiet "refs/tags/$requested_tag" >/dev/null; then
-  echo "Tag '$requested_tag' already exists locally." >&2
-  exit 1
-fi
-
-if gh release view "$requested_tag" --repo "$repo" >/dev/null 2>&1; then
-  echo "GitHub Release '$requested_tag' already exists." >&2
+if gh release view "$next_tag" --repo "$repo" >/dev/null 2>&1; then
+  echo "GitHub Release '$next_tag' already exists." >&2
   exit 1
 fi
 
 echo "Latest action release tag: $latest_tag"
-echo "Next action release tag: $requested_tag"
+echo "Next action release tag: $next_tag"
+if [[ -n "$release_bump_kind" ]]; then
+  echo "Inferred release bump kind: $release_bump_kind"
+  echo "Release PRs: ${release_pr_numbers[*]}"
+fi
+if [[ -n "$requested_tag" ]]; then
+  echo "Requested action release tag: $requested_tag"
+fi
 echo "Moving major tag: $major_tag"
 echo "Release commit: $target_sha"
 
@@ -162,14 +304,14 @@ if [[ "$dry_run" == "true" ]]; then
   exit 0
 fi
 
-git tag "$requested_tag" "$target_sha"
+git tag "$next_tag" "$target_sha"
 git tag -f "$major_tag" "$target_sha"
-git push "$remote" "refs/tags/$requested_tag"
+git push "$remote" "refs/tags/$next_tag"
 git push --force "$remote" "refs/tags/$major_tag"
 
-gh release create "$requested_tag" \
+gh release create "$next_tag" \
   --repo "$repo" \
-  --title "$requested_tag" \
+  --title "$next_tag" \
   --verify-tag \
   --generate-notes \
   --notes-start-tag "$latest_tag"
