@@ -61,7 +61,7 @@ runs:
         echo "version=${translated_version}" >> "$GITHUB_OUTPUT"
 
     - name: Install datadog-ci
-      uses: DataDog/install-datadog-ci-github-action@7960c07e413c56665e12346b34eec80089a7260e # v1.0.2
+      uses: DataDog/install-datadog-ci-github-action@6d7f0c7c5402a4b1912055b76970ca76bef71fe5 # v1.0.4
       with:
         version: ${{ steps.translate-version.outputs.version }}
         github-token: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
