@@ -294,8 +294,8 @@ if [[ "$dry_run" == "true" ]]; then
   exit 0
 fi
 
-git tag "$next_tag" "$target_sha"
-git tag -f "$major_tag" "$target_sha"
+git tag --no-sign "$next_tag" "$target_sha"
+git tag --no-sign -f "$major_tag" "$target_sha"
 git push "$remote" "refs/tags/$next_tag"
 git push --force "$remote" "refs/tags/$major_tag"
 
