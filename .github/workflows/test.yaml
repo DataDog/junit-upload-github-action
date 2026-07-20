@@ -12,7 +12,7 @@ jobs:
   test-default-datadog-ci-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Check PR has a semver release label
         if: github.event_name == 'pull_request'
         run: |
@@ -50,7 +50,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Upload reports using a glob pattern
         uses: ./
         with:
@@ -77,7 +77,7 @@ jobs:
         # Test backwards compatibility with legacy npm semver syntax
         version: ["latest", "^5.0.0", "~5.0.0", ">=5.0.0", "5.x"]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Sanitize version for tag
         id: sanitize
         run: |
@@ -109,7 +109,7 @@ jobs:
   test-older-datadog-ci-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Grab second latest version of @datadog/datadog-ci
         env:
           GH_TOKEN: ${{ github.token }}
@@ -156,7 +156,7 @@ jobs:
   test-should-complain-about-missing-api-key:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Upload reports using a glob pattern
         uses: ./
         id: test_step
