@@ -4,10 +4,7 @@ This action installs a pre-built [datadog-ci](https://github.com/DataDog/datadog
 to the [Test Optimization product](https://docs.datadoghq.com/tests/).
 
 > [!IMPORTANT]
-> v4 requires GitHub Actions Runner 2.327.1 or newer because its installer dependency uses the Node.js 24 action runtime.
-> GitHub-hosted runners are kept up to date, but users of self-hosted runners must upgrade before moving from v3 to v4.
-> Users who cannot upgrade should remain on `@v3`. This does not change the Node.js version used by your project.
-> See [GitHub's Node 20 deprecation notice](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/).
+> v4 requires GitHub Actions Runner 2.327.1 or newer on self-hosted runners. See [Migrating from v3 to v4](#migrating-from-v3-to-v4).
 
 ## Usage
 
@@ -17,12 +14,27 @@ on: [ push ]
 jobs:
   test:
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - run: make tests
       - uses: datadog/junit-upload-github-action@v4
         with:
           api_key: ${{ secrets.DD_API_KEY }}
 ```
+
+## Migrating from v3 to v4
+
+v4 updates its installer dependency from `install-datadog-ci-github-action` v1 to v2. The new installer uses `actions/cache` v6, which runs on Node.js 24 and requires [GitHub Actions Runner 2.327.1 or newer](https://github.com/actions/runner/releases/tag/v2.327.1). No `junit-upload-github-action` inputs changed between v3.8.0 and v4.0.0.
+
+- **GitHub-hosted runners:** No runner changes are needed. Update the action reference from `@v3` to `@v4`.
+- **Self-hosted runners:** Upgrade the runner to version 2.327.1 or newer before updating the action reference. Node.js 24 does not support macOS 13.4 or earlier or ARM32 hosts.
+- **Unable to upgrade:** Continue using `datadog/junit-upload-github-action@v3`.
+
+```diff
+- uses: datadog/junit-upload-github-action@v3
++ uses: datadog/junit-upload-github-action@v4
+```
+
+The Node.js 24 requirement applies to the action runtime and does not change the Node.js version used by your project. See [GitHub's Node 20 deprecation notice](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/) for details.
 
 ## Inputs
 
